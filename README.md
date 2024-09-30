@@ -1,6 +1,6 @@
 # Uptime Monitoring System
 
-This repository contains the source code and documentation for the Uptime Monitoring System to be deployed at Ronald Reagan Washington National Airport and Washington Dulles International Airport. The system monitors the uptime of Elevators, Escalators, and Moving Walkways (EEMWs) and sends notifications when any device experiences downtime. This helps ensure operational efficiency and safety within airport facilities, particularly in high-traffic areas.
+This repository contains the source code and documentation for the Uptime Monitoring System to be deployed at Ronald Reagan Washington National Airport and Washington Dulles International Airport. The system monitors the uptime of elevators, escalators, and moving walkways (EEMWs) and sends notifications when any device experiences downtime. This helps ensure operational efficiency and safety within airport facilities, particularly in high-traffic areas.
 
 ![V2 Sensor Image](https://github.com/AirportLabs/uptime/blob/main/photos/sensor_v2.png)
 
