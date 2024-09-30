@@ -26,7 +26,7 @@ This repository contains the source code and documentation for the Uptime Monito
 - **Real-time Uptime Monitoring**: Sensors deployed on EEMWs send data every minute or when an incident is detected, which is processed by the Firebase Function.
 - **Automatic Outage Detection**: If a sensor reports power loss or an alarm condition, the device is marked as offline.
 - **Delayed Notification**: To avoid false alarms due to transient issues, email notifications are delayed by 30 seconds.
-- **Uptime Calculation**: A scheduled job calculates uptime metrics monthly, providing insights into device performance.
+- **Uptime Calculation**: A scheduled job calculates uptime metrics monthly, providing insights into EEMW performance.
 
 ## Theory of Operation: EEMW Monitors (Hardware)
 
