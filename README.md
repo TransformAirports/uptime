@@ -38,7 +38,7 @@ The EEMW sensors serve to:
 - Assist in the transition from the legacy building management system, ensuring continued monitoring capabilities.
 - Enhance response times for contractors by enabling reactive fault detection and minimizing downtime.
 
-### Seperation from Legacy Energy Management Control System (EMCS)
+### Separation from Legacy Energy Management Control System (EMCS)
 
 The existing EEMW monitoring system captures two critical signals (power and alarm status) from each EEMW set and relays this information to a central server via the legacy EMCS. The EEMW monitoring solution replicates this functionality by capturing the same binary (true/false) power and alarm signals but establishes a modern data path to transmit this status information to an Internet database. This ensures that monitoring capabilities remain uninterrupted during and after the transition to the upgraded EMCS. The existing EEMW is not part of the new EMCS and will be shut down when the new EMCS is fully deployed.
 
