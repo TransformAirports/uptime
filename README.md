@@ -105,7 +105,7 @@ The Uptime Monitoring System was created to be redundantly simple, allowing the 
 
 #### Collaboration with TechWorks
 
-- **Development of SOP**: We will work closely with TechWorks to develop a Standard Operating Procedure (SOP) that outlines the process for handling any calls or outreach concerning the Uptime Monitoring System. This SOP will ensure that any reports made to TechWorks are redirected to our team.
+- **Development of SOP**: A Standard Operating Procedure (SOP) will be developed that outlines the process for handling any calls or outreach concerning the Uptime Monitoring System. This SOP will ensure that any reports made to TechWorks are redirected to our team.
 
 #### Failback Plan
 
