@@ -1,0 +1,202 @@
+body {
+  font-family: Arial, sans-serif;
+}
+
+.device-type {
+  margin-bottom: 10px; /* Reduce the bottom margin */
+}
+
+.device-type h2 {
+  font-size: 1.5em;
+  margin-bottom: 10px;
+}
+
+.device-card {
+  margin-bottom: 5px; /* Reduce the margin between cards */
+  padding: 5px; /* Reduce padding inside the card */
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  flex: 1 1 16%; /* Flex basis to make up to six cards per row */
+}
+
+.device.online {
+  background-color: #d4edda;
+}
+
+.device.offline {
+  background-color: #f8d7da;
+}
+
+.device.unmonitored {
+  background-color: #e9ecef; /* Grey background for unmonitored devices */
+}
+
+.sensor-offline-box {
+  border: 2px solid #ffc107; /* Yellow border for sensor offline */
+}
+
+.device .status-light {
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  margin-right: 5px;
+}
+
+.status-light.on {
+  background-color: green !important;
+}
+
+.status-light.off {
+  background-color: red !important;
+}
+
+.sensor-status-container {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end; /* Right align the sensor status */
+}
+
+.sensor-status {
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  margin-left: 5px;
+}
+
+.sensor-online {
+  background-color: green;
+}
+
+.sensor-offline {
+  background-color: red;
+}
+
+/* Flexbox for tighter card layout */
+.device-type .row {
+  display: flex;
+  flex-wrap: wrap;
+  margin: -5px; /* Negative margin to offset card padding/margin */
+}
+
+.device-type .device-card {
+  margin: 5px; /* Adjust the margin between cards */
+  flex: 1 1 calc(16.66% - 10px); /* Flex basis for up to six cards per row */
+}
+
+.card {
+  height: 100%; /* Ensure that all cards have the same height */
+  padding: 10px; /* Adjust padding for tighter layout */
+}
+
+.navbar-nav {
+  display: flex;
+  flex-direction: row;
+}
+
+.navbar-nav .nav-item {
+  margin-right: 20px; /* Add spacing between nav items */
+}
+
+.navbar-nav .nav-link.active {
+  font-weight: bold;
+  color: white;
+  border-radius: 0.25rem;
+}
+
+.navbar-brand {
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+.unmonitored {
+  background-color: #e9ecef; /* Grey background for unmonitored devices */
+}
+.device-type .device-card {
+  margin: 5px; /* Adjust the margin between cards */
+  flex: 0 1 16%; /* Default: Fixed width for six cards per row */
+  max-width: 16.66%;
+}
+
+@media (max-width: 767px) {
+  .device-type .device-card {
+    flex: 0 1 100%; /* Full width for mobile */
+    max-width: 100%;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  .device-type .device-card {
+    flex: 0 1 32%; /* Adjust width for tablet-sized screens */
+    max-width: 32.33%;
+  }
+}
+
+@media (min-width: 992px) and (max-width: 3839px) {
+  .device-type .device-card {
+    flex: 0 1 16%; /* Standard width for six cards per row on larger screens */
+    max-width: 16.66%;
+  }
+}
+
+@media (min-width: 3840px) {
+  .device-type .device-card {
+    flex: 0 1 8%; /* Adjust to fit 12 cards per row on 4K displays */
+    max-width: 8.33%;
+  }
+}
+
+/* Smaller padding and margins for unmonitored cards */
+.card.unmonitored {
+  padding: 5px;
+  margin: 5px;
+}
+
+/* Ensure the card body adjusts accordingly */
+.card.unmonitored .card-body {
+  padding: 10px;
+}
+
+/* Flex container for device cards within the accordion */
+.accordion-body .row {
+  display: flex;
+  flex-wrap: wrap;
+  margin: -5px;
+}
+
+/* Device cards within the accordion */
+.accordion-body .device-card {
+  margin: 5px;
+  flex: 1 1 calc(16.66% - 10px); /* Adjust for 6 cards per row */
+  max-width: calc(16.66% - 10px);
+}
+
+/* Media queries for responsiveness */
+@media (max-width: 767px) {
+  .accordion-body .device-card {
+    flex: 0 1 100%;
+    max-width: 100%;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  .accordion-body .device-card {
+    flex: 0 1 calc(33.33% - 10px);
+    max-width: calc(33.33% - 10px);
+  }
+}
+
+@media (min-width: 992px) and (max-width: 3839px) {
+  .accordion-body .device-card {
+    flex: 0 1 calc(16.66% - 10px);
+    max-width: calc(16.66% - 10px);
+  }
+}
+
+@media (min-width: 3840px) {
+  .accordion-body .device-card {
+    flex: 0 1 calc(8.33% - 10px);
+    max-width: calc(8.33% - 10px);
+  }
+}
