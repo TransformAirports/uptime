@@ -32,20 +32,20 @@ This repository contains the source code and documentation for the Uptime Monito
 
 ### Purpose and Goals
 
-The EEMW monitors serve to:
+The EEMW sensors serve to:
 
 - Provide accurate real-time monitoring of EEMW equipment.
-- Facilitate a smooth transition from the legacy building management system to the upgraded system, ensuring continued monitoring capabilities.
-- Enhance response times for maintenance teams by enabling proactive fault detection and minimizing downtime.
+- Assist in the transition from the legacy building management system, ensuring continued monitoring capabilities.
+- Enhance response times for contractors by enabling reactive fault detection and minimizing downtime.
 
-### Integration with Legacy and New Monitoring Systems
+### Seperation from Legacy Energy Management Control System (EMCS)
 
-The existing EEMW monitoring system captures two critical signals (power and alarm status) from each EEMW set and relays this information to a central server via the building management system. The new EEMW monitoring solution replicates this functionality by capturing the same power and alarm signals but establishes a modern data path to transmit this status information via the guest Wi-Fi network to a secure web-based dashboard. This ensures that monitoring capabilities remain uninterrupted during and after the transition to the upgraded building management system.
+The existing EEMW monitoring system captures two critical signals (power and alarm status) from each EEMW set and relays this information to a central server via the legacy EMCS. The EEMW monitoring solution replicates this functionality by capturing the same binary (true/false) power and alarm signals but establishes a modern data path to transmit this status information to an Internet database. This ensures that monitoring capabilities remain uninterrupted during and after the transition to the upgraded EMCS. The existing EEMW is not part of the new EMCS and will be shut down when the new EMCS is fully deployed.
 
 ### Data Transmission and Communication Path
 
 - **Legacy Data Path**: Previously, the system relied on hardwired connections to transmit data through the building management system.
-- **New Data Path**: The EEMW monitor processes incoming EEMW signals and transmits equipment status data securely over the guest Wi-Fi network using HTTPS, ensuring encrypted communication with the cloud API.
+- **New Data Path**: The EEMW monitor processes incoming EEMW signals and transmits equipment status data securely over the public Wi-Fi network using HTTPS, ensuring encrypted communication with the cloud API.
 
 ## Hardware Details and Electronics Theory of Operation
 
@@ -75,7 +75,7 @@ Detailed wiring diagrams show the connection between power sources, sensors, and
 
 ### Enclosure Design
 
-The sensor enclosures are designed to protect hardware components from environmental factors, ensuring longevity and consistent performance. The materials and design considerations ensure that the hardware is protected aginst phisical damage and dust.
+The sensor enclosures are designed to protect hardware components from environmental factors, ensuring longevity and consistent performance. The materials and design considerations ensure that the hardware is protected against physical damage and dust. The enclosure makes use of security tamper-resistant screws.
 
 ### Monitoring and Notifications
 
@@ -83,7 +83,7 @@ The system monitors EEMWs and notifies relevant stakeholders via email when an o
 
 ### Dashboard Access
 
-The Dashboard is accessible via uptime.transformairports.com. Admins can log in to manage alert email addresses for different campuses (DCA, IAD).
+The dashboard tool is accessible via uptime.transformairports.com and requires a username and password. Admins can log in to manage alert email addresses for different campuses.
 
 ## Maintenance and Monitoring
 
@@ -101,11 +101,11 @@ The Uptime Monitoring System was created to be redundantly simple, allowing the 
 
 #### Direct Communication with Work Control Centers
 
-- **Clear Communication Channels**: We will ensure that the Work Control Centers at both Ronald Reagan Washington National Airport and Washington Dulles International Airport understand that any issues related to the Uptime Monitoring System should not be directed to IT's TechWorks support desk. Instead, a direct line of communication will be established with our team.
+- **Clear Communication Channels**: We will ensure that the Work Control Centers at both DCA and IAD understand that any issues related to the Uptime Monitoring System should not be directed to IT's TechWorks support desk. Instead, communication should be established with our team.
 
 #### Collaboration with TechWorks
 
-- **Development of SOP**: We will work closely with TechWorks to develop a Standard Operating Procedure (SOP) that outlines the process for handling any calls or outreach concerning the Uptime Monitoring System. This SOP will ensure that any reports made to TechWorks are efficiently redirected to our team.
+- **Development of SOP**: We will work closely with TechWorks to develop a Standard Operating Procedure (SOP) that outlines the process for handling any calls or outreach concerning the Uptime Monitoring System. This SOP will ensure that any reports made to TechWorks are redirected to our team.
 
 #### Failback Plan
 
@@ -113,39 +113,27 @@ The Uptime Monitoring System was created to be redundantly simple, allowing the 
 
 ## Compliance and Security
 
-The system was custom-developed to address the specific needs of MWAA relevant MWAA requirements such as the [Enterprise Technology Management Directive](#enterprise-technology-management-compliance) and [Information Security Directive](#information-security-compliance). At the same time, it follows our internal guidelines to prioritize fast, minimally viable product (MVP) innovation.
+The system was custom-developed to address the specific needs of MWAA and relevant MWAA documents such as the[Enterprise Technology Management Directive and Information Security Directive. At the same time, it follows our internal guidelines to prioritize fast, minimally viable product (MVP) innovation.
 
-The Uptime Monitoring System was custom-developed to address the specific needs of MWAA, recognizing that while we do not perform the maintenance on Elevators, Escalators, and Moving Walkways (EEMWs) ourselves, it is crucial to monitor their status, track key performance indicators (KPIs), and promptly alert the maintenance contractors. This solution was identified as a high-value opportunity, providing a focused and efficient alternative to the more complex and time-consuming procurement or traditional application development processes.
+The Uptime Monitoring System concept was designed to address the specific needs of MWAA, recognizing that while we do not perform the maintenance on EEMWs ourselves, it is crucial to monitor their status, track key performance indicators (KPIs), and promptly alert the maintenance contractors. This solution was identified as a high-return opportunity, providing a focused and efficient alternative to the more complex and time-consuming procurement.
 
 By developing a tailored solution, we ensured that our system could be implemented rapidly and cost-effectively, bypassing the need for commercial offering that would typically involve a seven-figure investment. This approach not only meets the immediate operational requirements but also exemplifies the ROI-driven mindset encouraged by MWAA. The use of the Firebase platform further supports these goals by offering a scalable and secure environment that aligns with MWAA’s directive to "Re-Use" existing technology, "Buy" off-the-shelf solutions where applicable, and "Build" customized solutions only when necessary.
 
 #### Microcontroller Security: ESP32 Devices
 
-The ESP32 devices are configured to communicate solely with the API, not directly with the database, providing an additional layer of security.
+The ESP32 devices are inherently more secure as they do not run a full operating system, reducing the attack surface commonly associated with OS vulnerabilities. These microcontrollers are configured to communicate solely with the API, bypassing direct database access, which adds an extra layer of security by limiting exposure to sensitive data. Additionally, the lack of background processes and minimized functionality ensures fewer potential entry points for malicious activity, making the system more resilient to external threats.
 
 #### Network Segmentation
 
 Network segmentation ensures that the EEMW monitoring system operates in isolation from MWAA’s non-public networks, minimizing security risks.
 
+#### Physical Segmentation
+
+The sensors will be physically secured in designated electrical and equipment rooms, restricting access to authorized personnel only. This controlled environment adds another level of security by preventing unauthorized tampering or physical attacks on the hardware.
+
 #### Rationale for the Chosen Development Process
 
-The development process for the Uptime Monitoring System was deliberately designed to follow a rapid, Minimum Viable Product (MVP) approach. This decision was made based on several key factors, each aligned with MWAA's goals of operational efficiency, cost-effectiveness, and innovation:
-
-##### 1. **Speed to Market**
-   - **Rationale**: The pressing need to monitor elevators, escalators, and moving walkways (EEMWs) at DCA and IAD required a solution that could be deployed quickly. Traditional development and procurement processes would have significantly delayed the system's implementation, potentially leaving critical infrastructure without adequate monitoring.
-   - **Benefit**: By adopting an MVP approach, we were able to deploy a functional version of the system in a fraction of the time, providing immediate value and allowing us to gather real-world feedback early on.
-
-##### 2. **Cost-Effectiveness**
-   - **Rationale**: The MVP approach enabled us to minimize upfront costs by focusing on essential features that deliver the most immediate impact. This method avoided the high costs typically associated with comprehensive, off-the-shelf software solutions that may include unnecessary features.
-   - **Benefit**: This approach aligns with MWAA's directive to control costs by leveraging existing technology and only building customized solutions when necessary. The cost savings from avoiding a full-scale traditional procurement could potentially run into seven figures.
-
-##### 3. **Iterative Improvement and Flexibility**
-   - **Rationale**: The MVP approach allows for iterative development, meaning the system can evolve based on actual user needs and feedback. This flexibility is crucial in adapting to the specific operational requirements of EEMW monitoring, which might not be fully anticipated during the initial planning stages.
-   - **Benefit**: This iterative process ensures that resources are allocated effectively, focusing on developing features that provide the most significant benefit and allowing for continuous improvement without the need for extensive rework.
-
-##### 4. **Innovation and Agility**
-   - **Rationale**: The MVP approach supports MWAA's broader innovation goals by fostering a culture of agility and responsiveness. By enabling rapid prototyping and testing, the development team can explore new technologies and approaches that might be too risky or unproven for traditional IT processes.
-   - **Benefit**: This approach not only accelerates the deployment of new solutions but also positions MWAA as a leader in adopting innovative practices that can be scaled across other areas of the organization.
+The Uptime Monitoring System was developed using a rapid, Minimum Viable Product (MVP) approach to address the urgent need for real-time monitoring of EEMWs at DCA and IAD. By focusing on essential features, this method allowed us to quickly deploy a functional concept, minimizing delays associated with traditional procurement and significantly reducing costs. This iterative, cost-effective approach enables continuous improvement based on user feedback and evolving operational requirements. Additionally, the MVP framework fosters innovation and agility, supporting MWAA's goal of implementing cutting-edge solutions without the risk and expense of full-scale commercial alternatives.
 
 ## Services
 
