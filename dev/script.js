@@ -69,25 +69,28 @@ function showLoginForm() {
 const checkAuthentication = () => {
   firebase.auth().onAuthStateChanged((user) => {
     if (user) {
-      // User is authenticated, show the entire site
+      // User is authenticated
       document.getElementById("login-form").style.display = "none";
       document.getElementById("signup-form").style.display = "none";
       document.getElementById("admin-content").style.display = "block";
       document.getElementById("deviceAccordion").style.display = "block";
       document.getElementById("logout-button").style.display = "block";
+      document.getElementById("logout-nav-item").style.display = "block"; // Show the Logout link
 
       // Load devices and any other authenticated content
       loadDevices();
     } else {
-      // User is not authenticated, show login form and hide all other content
+      // User is not authenticated
       document.getElementById("login-form").style.display = "block";
       document.getElementById("signup-form").style.display = "none";
       document.getElementById("admin-content").style.display = "none";
       document.getElementById("deviceAccordion").style.display = "none";
       document.getElementById("logout-button").style.display = "none";
+      document.getElementById("logout-nav-item").style.display = "none"; // Hide the Logout link
     }
   });
 };
+
 
 // Function to start the application
 function startApp() {
@@ -160,23 +163,24 @@ function startApp() {
     });
   }
 
-  // Logout Logic
-  const logoutButton = document.getElementById("logout-button");
-  if (logoutButton) {
-    logoutButton.addEventListener("click", () => {
-      firebase
-        .auth()
-        .signOut()
-        .then(() => {
-          console.log("Logged out successfully");
-          checkAuthentication(); // Update the UI after logout
-        })
-        .catch((error) => {
-          console.error("Logout failed:", error);
-          alert("Logout failed: " + error.message);
-        });
-    });
-  }
+// Logout Logic for the Logout link in the navbar
+const logoutLink = document.getElementById("logout-link");
+if (logoutLink) {
+  logoutLink.addEventListener("click", (event) => {
+    event.preventDefault(); // Prevent default link behavior
+    firebase
+      .auth()
+      .signOut()
+      .then(() => {
+        console.log("Logged out successfully");
+        checkAuthentication(); // Update the UI after logout
+      })
+      .catch((error) => {
+        console.error("Logout failed:", error);
+        alert("Logout failed: " + error.message);
+      });
+  });
+}
 
   // Event listener for the sign-up button
   const signupButton = document.getElementById("signup-button");
