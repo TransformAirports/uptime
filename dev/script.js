@@ -28,15 +28,9 @@ const showTabContent = (tab) => {
   const loginForm = document.getElementById("login-form");
   const signupForm = document.getElementById("signup-form");
 
-  if (devModeGlobal && !firebase.auth().currentUser) {
-    // If devMode is true and user is not authenticated, show login form
-    showLoginForm();
-    return;
-  }
-
-  if (tab === "Admin") {
-    // Admin tab selected
-    firebase.auth().onAuthStateChanged((user) => {
+  // Simplified Authentication: Check if the user is logged in
+  firebase.auth().onAuthStateChanged((user) => {
+    if (tab === "Admin") {
       if (user) {
         // User is authenticated, show admin content
         adminContent.style.display = "block";
@@ -48,16 +42,17 @@ const showTabContent = (tab) => {
         loginForm.style.display = "block";
         signupForm.style.display = "none";
       }
-    });
-    devicesContainer.style.display = "none"; // Hide devices
-  } else {
-    // Devices tab selected
-    adminContent.style.display = "none";
-    loginForm.style.display = "none";
-    signupForm.style.display = "none";
-    devicesContainer.style.display = "block"; // Show devices
-  }
+      devicesContainer.style.display = "none"; // Hide devices
+    } else {
+      // Devices tab selected
+      adminContent.style.display = "none";
+      loginForm.style.display = "none";
+      signupForm.style.display = "none";
+      devicesContainer.style.display = "block"; // Show devices
+    }
+  });
 };
+
 
 // Function to show the login form
 function showLoginForm() {
@@ -69,6 +64,22 @@ function showLoginForm() {
   // Show login form
   document.getElementById("login-form").style.display = "block";
 }
+
+// Function to show content based on authentication status
+const checkAuthentication = () => {
+  firebase.auth().onAuthStateChanged((user) => {
+    if (user) {
+      // User is authenticated, show the entire site
+      document.getElementById("login-form").style.display = "none";
+      document.getElementById("admin-content").style.display = "block";
+      document.getElementById("deviceAccordion").style.display = "block";
+      loadDevices(); // Load the devices once authenticated
+    } else {
+      // User is not authenticated, show login form and hide all other content
+      showLoginForm();
+    }
+  });
+};
 
 // Function to start the application
 function startApp() {
@@ -557,40 +568,40 @@ const getCampusFromURL = () => {
 
 // Ensure the DOM is fully loaded before executing any scripts
 document.addEventListener("DOMContentLoaded", function () {
+  // Ensure the Firebase config is loaded and initialized first
   loadFirebaseConfig()
     .then(() => {
       console.log("Firebase config loaded and initialized.");
-
-      // Read devMode value from Firebase
-      firebase
-        .database()
-        .ref("devMode")
-        .once("value")
-        .then((snapshot) => {
-          const devMode = snapshot.val();
-          devModeGlobal = devMode; // Store devMode value globally
-
-          if (devMode) {
-            // devMode is true, require authentication for the entire site
-            firebase.auth().onAuthStateChanged((user) => {
-              if (user) {
-                // User is authenticated
-                startApp(); // Start the application
-              } else {
-                // User is not authenticated
-                showLoginForm(); // Show login form and hide other content
-              }
-            });
-          } else {
-            // devMode is false, only admin features require authentication
-            startApp(); // Start the application
-          }
-        })
-        .catch((error) => {
-          console.error("Error reading devMode:", error);
-        });
+      startApp(); // Start the application
     })
     .catch((err) => {
       console.error("Failed to initialize Firebase:", err);
     });
+
+  // Event listener for the login button
+  const loginButton = document.getElementById("login-button");
+  if (loginButton) {
+    loginButton.addEventListener("click", () => {
+      const email = document.getElementById("login-email").value;
+      const password = document.getElementById("login-password").value;
+
+      // Ensure that email and password are not empty
+      if (email && password) {
+        firebase
+          .auth()
+          .signInWithEmailAndPassword(email, password)
+          .then(() => {
+            console.log("Logged in successfully");
+            showTabContent("Admin");
+          })
+          .catch((error) => {
+            console.error("Login failed:", error);
+            alert("Login failed: " + error.message);
+          });
+      } else {
+        alert("Please enter both email and password.");
+      }
+    });
+  }
 });
+
