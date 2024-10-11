@@ -71,12 +71,20 @@ const checkAuthentication = () => {
     if (user) {
       // User is authenticated, show the entire site
       document.getElementById("login-form").style.display = "none";
+      document.getElementById("signup-form").style.display = "none";
       document.getElementById("admin-content").style.display = "block";
       document.getElementById("deviceAccordion").style.display = "block";
-      loadDevices(); // Load the devices once authenticated
+      document.getElementById("logout-button").style.display = "block";
+
+      // Load devices and any other authenticated content
+      loadDevices();
     } else {
       // User is not authenticated, show login form and hide all other content
-      showLoginForm();
+      document.getElementById("login-form").style.display = "block";
+      document.getElementById("signup-form").style.display = "none";
+      document.getElementById("admin-content").style.display = "none";
+      document.getElementById("deviceAccordion").style.display = "none";
+      document.getElementById("logout-button").style.display = "none";
     }
   });
 };
@@ -131,7 +139,7 @@ function startApp() {
     addEmailButtonIAD.addEventListener("click", () => addEmailAddress("IAD"));
   }
 
-  // Authentication Logic
+  // Login Logic
   const loginButton = document.getElementById("login-button");
   if (loginButton) {
     loginButton.addEventListener("click", () => {
@@ -143,19 +151,29 @@ function startApp() {
         .signInWithEmailAndPassword(email, password)
         .then(() => {
           console.log("Logged in successfully");
-
-          if (devModeGlobal) {
-            // If devMode is true, start the app
-            startApp();
-          } else {
-            // If devMode is false, go to Admin tab
-            setActiveTab("Admin");
-            loadEmailAddresses();
-          }
+          checkAuthentication(); // Update the UI after login
         })
         .catch((error) => {
           console.error("Login failed:", error);
           alert("Login failed: " + error.message);
+        });
+    });
+  }
+
+  // Logout Logic
+  const logoutButton = document.getElementById("logout-button");
+  if (logoutButton) {
+    logoutButton.addEventListener("click", () => {
+      firebase
+        .auth()
+        .signOut()
+        .then(() => {
+          console.log("Logged out successfully");
+          checkAuthentication(); // Update the UI after logout
+        })
+        .catch((error) => {
+          console.error("Logout failed:", error);
+          alert("Logout failed: " + error.message);
         });
     });
   }
@@ -207,29 +225,8 @@ function startApp() {
     });
   }
 
-  // Logout Logic
-  const logoutButton = document.getElementById("logout-button");
-  if (logoutButton) {
-    logoutButton.addEventListener("click", () => {
-      firebase
-        .auth()
-        .signOut()
-        .then(() => {
-          console.log("Logged out successfully");
-          if (devModeGlobal) {
-            // In devMode, show login form
-            showLoginForm();
-          } else {
-            // Not in devMode, only admin features require authentication
-            setActiveTab(currentCampus); // Go back to the current campus
-          }
-        })
-        .catch((error) => {
-          console.error("Logout failed:", error);
-          alert("Logout failed: " + error.message);
-        });
-    });
-  }
+  // Check authentication status
+  checkAuthentication();
 }
 
 // Function to load email addresses for both campuses in the admin tab
@@ -577,31 +574,4 @@ document.addEventListener("DOMContentLoaded", function () {
     .catch((err) => {
       console.error("Failed to initialize Firebase:", err);
     });
-
-  // Event listener for the login button
-  const loginButton = document.getElementById("login-button");
-  if (loginButton) {
-    loginButton.addEventListener("click", () => {
-      const email = document.getElementById("login-email").value;
-      const password = document.getElementById("login-password").value;
-
-      // Ensure that email and password are not empty
-      if (email && password) {
-        firebase
-          .auth()
-          .signInWithEmailAndPassword(email, password)
-          .then(() => {
-            console.log("Logged in successfully");
-            showTabContent("Admin");
-          })
-          .catch((error) => {
-            console.error("Login failed:", error);
-            alert("Login failed: " + error.message);
-          });
-      } else {
-        alert("Please enter both email and password.");
-      }
-    });
-  }
 });
-
