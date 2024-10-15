@@ -100,26 +100,30 @@ function startApp() {
     addEmailButtonIAD.addEventListener("click", () => addEmailAddress("IAD"));
   }
 
-  // Login Logic
-  const loginButton = document.getElementById("login-button");
-  if (loginButton) {
-    loginButton.addEventListener("click", () => {
-      const email = document.getElementById("login-email").value;
-      const password = document.getElementById("login-password").value;
+// Login Logic
+const loginButton = document.getElementById("login-button");
+if (loginButton) {
+  loginButton.addEventListener("click", () => {
+    const email = document.getElementById("login-email").value;
+    const password = document.getElementById("login-password").value;
 
-      firebase
-        .auth()
-        .signInWithEmailAndPassword(email, password)
-        .then(() => {
-          console.log("Logged in successfully");
-          setActiveTab(currentCampus); // Update the UI after login
-        })
-        .catch((error) => {
-          console.error("Login failed:", error);
-          alert("Login failed: " + error.message);
-        });
-    });
-  }
+    firebase
+      .auth()
+      .signInWithEmailAndPassword(email, password)
+      .then(() => {
+        console.log("Logged in successfully");
+        setActiveTab(currentCampus); // Update the UI after login
+      })
+      .catch((error) => {
+        console.error("Login failed:", error);
+        if (error.code === 'auth/user-disabled') {
+          alert('Your account has been disabled. Please contact support.');
+        } else {
+          alert('Login failed: ' + error.message);
+        }
+      });
+  });
+}
 
   // Logout Logic for the Logout link in the navbar
   const logoutLink = document.getElementById("logout-link");
@@ -158,38 +162,48 @@ function startApp() {
     });
   }
 
-  // Sign-up Logic
-  const createAccountButton = document.getElementById(
-    "create-account-button"
-  );
-  if (createAccountButton) {
-    createAccountButton.addEventListener("click", () => {
-      const email = document.getElementById("signup-email").value;
-      const password = document.getElementById("signup-password").value;
+// Sign-up Logic
+const createAccountButton = document.getElementById('create-account-button');
+if (createAccountButton) {
+  createAccountButton.addEventListener('click', () => {
+    const email = document.getElementById('signup-email').value;
+    const password = document.getElementById('signup-password').value;
 
-      if (!email.endsWith("@mwaa.com")) {
-        alert("Only MWAA email addresses are allowed.");
-        return;
-      }
+    // Commented out the client-side check
+    // if (!email.endsWith('@mwaa.com')) {
+    //   alert('Only MWAA email addresses are allowed.');
+    //   return;
+    // }
 
-      firebase
-        .auth()
-        .createUserWithEmailAndPassword(email, password)
-        .then(() => {
-          console.log("Account created successfully");
-          setActiveTab("Admin");
-        })
-        .catch((error) => {
-          console.error("Account creation failed:", error);
-          alert("Account creation failed: " + error.message);
-        });
-    });
-  }
+    firebase
+      .auth()
+      .createUserWithEmailAndPassword(email, password)
+      .then(() => {
+        console.log('Account created successfully');
+        alert('Account created successfully. Please log in.');
+        // Sign out the user to force a login attempt
+        firebase.auth().signOut();
+        // Redirect to login form
+        document.getElementById("signup-form").style.display = "none";
+        document.getElementById("login-form").style.display = "block";
+      })
+      .catch((error) => {
+        console.error('Account creation failed:', error);
+        alert('Account creation failed: ' + error.message);
+      });
+  });
+}
 
   // Monitor authentication state and update UI accordingly
-  firebase.auth().onAuthStateChanged((user) => {
+firebase.auth().onAuthStateChanged((user) => {
+  if (user) {
+    // User is signed in
     setActiveTab(currentCampus);
-  });
+  } else {
+    // User is signed out
+    showTabContent('login');
+  }
+});
 }
 
 // Function to set the active tab and update the URL
@@ -467,6 +481,12 @@ const loadDevices = () => {
 
     // Attach event listeners to the device cards for showing outage logs
     attachCardEventListeners();
+  }, (error) => {
+    console.error("Error loading devices:", error);
+    if (error.code === 'PERMISSION_DENIED') {
+      alert('You do not have permission to access this data.');
+      firebase.auth().signOut(); // Optionally sign out the user
+    }
   });
 };
 
