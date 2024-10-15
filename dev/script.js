@@ -180,7 +180,7 @@ if (createAccountButton) {
       .createUserWithEmailAndPassword(email, password)
       .then(() => {
         console.log('Account created successfully');
-        alert('Account created successfully. Please log in.');
+        alert('Account created successfully. Please check your email for further instructions.');
         // Sign out the user to force a login attempt
         firebase.auth().signOut();
         // Redirect to login form
