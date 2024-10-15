@@ -4,7 +4,6 @@
 let deviceIntervals = {}; // Interval timers for each device (for updating timers)
 let currentDeviceStates = {}; // Placeholder for state-tracking (currently unused)
 let currentCampus; // Variable to store the current campus (DCA or IAD)
-let devModeGlobal = false; // Global variable to store the devMode value from Firebase
 
 // Function to load Firebase config from localFirebase.json
 function loadFirebaseConfig() {
@@ -27,79 +26,42 @@ const showTabContent = (tab) => {
   const devicesContainer = document.getElementById("deviceAccordion");
   const loginForm = document.getElementById("login-form");
   const signupForm = document.getElementById("signup-form");
+  const logoutNavItem = document.getElementById("logout-nav-item");
 
-  // Simplified Authentication: Check if the user is logged in
-  firebase.auth().onAuthStateChanged((user) => {
+  const user = firebase.auth().currentUser;
+
+  if (user) {
+    // User is authenticated
+    loginForm.style.display = "none";
+    signupForm.style.display = "none";
+    logoutNavItem.style.display = "block";
+
     if (tab === "Admin") {
-      if (user) {
-        // User is authenticated, show admin content
-        adminContent.style.display = "block";
-        loginForm.style.display = "none";
-        signupForm.style.display = "none";
-      } else {
-        // User is not authenticated, show login form
-        adminContent.style.display = "none";
-        loginForm.style.display = "block";
-        signupForm.style.display = "none";
-      }
-      devicesContainer.style.display = "none"; // Hide devices
+      adminContent.style.display = "block";
+      devicesContainer.style.display = "none";
+      // Load admin content
+      loadEmailAddresses();
     } else {
-      // Devices tab selected
       adminContent.style.display = "none";
-      loginForm.style.display = "none";
-      signupForm.style.display = "none";
-      devicesContainer.style.display = "block"; // Show devices
-    }
-  });
-};
-
-
-// Function to show the login form
-function showLoginForm() {
-  // Hide other content
-  document.getElementById("admin-content").style.display = "none";
-  document.getElementById("deviceAccordion").style.display = "none";
-  document.getElementById("signup-form").style.display = "none";
-
-  // Show login form
-  document.getElementById("login-form").style.display = "block";
-}
-
-// Function to show content based on authentication status
-const checkAuthentication = () => {
-  firebase.auth().onAuthStateChanged((user) => {
-    if (user) {
-      // User is authenticated
-      document.getElementById("login-form").style.display = "none";
-      document.getElementById("signup-form").style.display = "none";
-      document.getElementById("admin-content").style.display = "block";
-      document.getElementById("deviceAccordion").style.display = "block";
-      document.getElementById("logout-button").style.display = "block";
-      document.getElementById("logout-nav-item").style.display = "block"; // Show the Logout link
-
-      // Load devices and any other authenticated content
+      devicesContainer.style.display = "block";
+      // Load devices for the selected campus
       loadDevices();
-    } else {
-      // User is not authenticated
-      document.getElementById("login-form").style.display = "block";
-      document.getElementById("signup-form").style.display = "none";
-      document.getElementById("admin-content").style.display = "none";
-      document.getElementById("deviceAccordion").style.display = "none";
-      document.getElementById("logout-button").style.display = "none";
-      document.getElementById("logout-nav-item").style.display = "none"; // Hide the Logout link
     }
-  });
+  } else {
+    // User is not authenticated
+    loginForm.style.display = "block";
+    signupForm.style.display = "none";
+    adminContent.style.display = "none";
+    devicesContainer.style.display = "none";
+    logoutNavItem.style.display = "none";
+  }
 };
-
 
 // Function to start the application
 function startApp() {
   // Set the campus based on URL parameter or default to DCA
   currentCampus = getCampusFromURL();
   setActiveTab(currentCampus);
-
-  // Load devices after Firebase initialization
-  loadDevices();
 
   // Event listeners for campus tab switching
   const dcaTab = document.getElementById("dca-tab");
@@ -109,7 +71,6 @@ function startApp() {
   if (dcaTab) {
     dcaTab.addEventListener("click", () => {
       currentCampus = "DCA";
-      loadDevices(); // Load devices for DCA
       setActiveTab(currentCampus);
     });
   }
@@ -117,7 +78,6 @@ function startApp() {
   if (iadTab) {
     iadTab.addEventListener("click", () => {
       currentCampus = "IAD";
-      loadDevices(); // Load devices for IAD
       setActiveTab(currentCampus);
     });
   }
@@ -125,8 +85,6 @@ function startApp() {
   if (adminTab) {
     adminTab.addEventListener("click", () => {
       setActiveTab("Admin");
-      showTabContent("Admin"); // Show the Admin content when Admin tab is clicked
-      loadEmailAddresses(); // Load the email addresses for editing
     });
   }
 
@@ -154,7 +112,7 @@ function startApp() {
         .signInWithEmailAndPassword(email, password)
         .then(() => {
           console.log("Logged in successfully");
-          checkAuthentication(); // Update the UI after login
+          setActiveTab(currentCampus); // Update the UI after login
         })
         .catch((error) => {
           console.error("Login failed:", error);
@@ -163,24 +121,24 @@ function startApp() {
     });
   }
 
-// Logout Logic for the Logout link in the navbar
-const logoutLink = document.getElementById("logout-link");
-if (logoutLink) {
-  logoutLink.addEventListener("click", (event) => {
-    event.preventDefault(); // Prevent default link behavior
-    firebase
-      .auth()
-      .signOut()
-      .then(() => {
-        console.log("Logged out successfully");
-        checkAuthentication(); // Update the UI after logout
-      })
-      .catch((error) => {
-        console.error("Logout failed:", error);
-        alert("Logout failed: " + error.message);
-      });
-  });
-}
+  // Logout Logic for the Logout link in the navbar
+  const logoutLink = document.getElementById("logout-link");
+  if (logoutLink) {
+    logoutLink.addEventListener("click", (event) => {
+      event.preventDefault(); // Prevent default link behavior
+      firebase
+        .auth()
+        .signOut()
+        .then(() => {
+          console.log("Logged out successfully");
+          setActiveTab(currentCampus); // Update the UI after logout
+        })
+        .catch((error) => {
+          console.error("Logout failed:", error);
+          alert("Logout failed: " + error.message);
+        });
+    });
+  }
 
   // Event listener for the sign-up button
   const signupButton = document.getElementById("signup-button");
@@ -220,7 +178,6 @@ if (logoutLink) {
         .then(() => {
           console.log("Account created successfully");
           setActiveTab("Admin");
-          loadEmailAddresses();
         })
         .catch((error) => {
           console.error("Account creation failed:", error);
@@ -229,9 +186,23 @@ if (logoutLink) {
     });
   }
 
-  // Check authentication status
-  checkAuthentication();
+  // Monitor authentication state and update UI accordingly
+  firebase.auth().onAuthStateChanged((user) => {
+    setActiveTab(currentCampus);
+  });
 }
+
+// Function to set the active tab and update the URL
+const setActiveTab = (tab) => {
+  document.querySelectorAll(".nav-link").forEach((link) => {
+    link.classList.remove("active");
+  });
+  document.getElementById(`${tab.toLowerCase()}-tab`).classList.add("active");
+
+  history.pushState({}, "", `?campus=${tab}`);
+
+  showTabContent(tab);
+};
 
 // Function to load email addresses for both campuses in the admin tab
 const loadEmailAddresses = () => {
@@ -313,8 +284,9 @@ const attachCardEventListeners = () => {
 
 // Load and display devices for the selected campus (DCA or IAD)
 const loadDevices = () => {
-  if (devModeGlobal && !firebase.auth().currentUser) {
-    // If devMode is true and user is not authenticated, do not load devices
+  const user = firebase.auth().currentUser;
+  if (!user) {
+    console.error("User not authenticated, cannot load devices.");
     return;
   }
 
@@ -542,23 +514,6 @@ const showOutageLogs = (deviceID) => {
     const outageLogModal = new bootstrap.Modal(document.getElementById('outageLogModal'));
     outageLogModal.show();
   });
-};
-
-// Function to set the active tab and update the URL
-const setActiveTab = (campus) => {
-  document.querySelectorAll(".nav-link").forEach((link) => {
-    link.classList.remove("active"); // Remove active class from all tabs
-  });
-  document.getElementById(`${campus.toLowerCase()}-tab`).classList.add("active"); // Add active class to the selected tab
-
-  history.pushState({}, "", `?campus=${campus}`); // Update the URL to reflect the selected tab
-
-  // If in devMode and user not authenticated, show login form
-  if (devModeGlobal && !firebase.auth().currentUser) {
-    showLoginForm();
-  } else {
-    showTabContent(campus); // Show the appropriate content for the selected tab
-  }
 };
 
 // Function to get the campus from the URL parameters
