@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EEMW Uptime Dashboard</title>
+    <!-- Custom Bootstrap: https://bootswatch.com/simplex/ -->
+    <link rel="stylesheet" href="bootstrap.min.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="container-fluid">
+      <div id="deviceAccordion" class="accordion container-fluid" style="display: none"></div>
+
+      <!-- Login Form -->
+      <div id="login-form" class="my-4" style="display: none">
+        <h2>Admin Login</h2>
+        <div class="mb-3">
+          <label for="email" class="form-label">Email address</label>
+          <input
+            type="email"
+            class="form-control"
+            id="login-email"
+            placeholder="Enter email"
+          />
+        </div>
+        <div class="mb-3">
+          <label for="password" class="form-label">Password</label>
+          <input
+            type="password"
+            class="form-control"
+            id="login-password"
+            placeholder="Password"
+          />
+        </div>
+        <button class="btn btn-primary" id="login-button">Login</button>
+        <button class="btn btn-secondary" id="signup-button">Sign Up</button>
+      </div>
+
+      <!-- Signup Form -->
+      <div id="signup-form" class="my-4" style="display: none">
+        <h2>Create Admin Account</h2>
+        <div class="mb-3">
+          <label for="signup-email" class="form-label">Email address</label>
+          <input
+            type="email"
+            class="form-control"
+            id="signup-email"
+            placeholder="Enter email"
+          />
+        </div>
+        <div class="mb-3">
+          <label for="signup-password" class="form-label">Password</label>
+          <input
+            type="password"
+            class="form-control"
+            id="signup-password"
+            placeholder="Password"
+          />
+        </div>
+        <button class="btn btn-primary" id="create-account-button">
+          Create Account
+        </button>
+        <button class="btn btn-secondary" id="back-to-login-button">
+          Back to Login
+        </button>
+      </div>
+
+<!-- Admin Content (visible after login) -->
+<div id="admin-content" class="container-fluid my-4" style="display: none">
+  <button class="btn btn-secondary mb-3" id="logout-button" style="position: absolute; top: 10px; right: 10px;">Logout</button>
+  <h2>Admin - Manage Alert Email Addresses</h2>
+  <div class="row">
+    <div class="col-md-6">
+      <h3>DCA</h3>
+      <ul id="emailListDCA" class="list-group mb-3"></ul>
+      <div class="input-group mb-3">
+        <input
+          type="email"
+          id="newEmailDCA"
+          class="form-control"
+          placeholder="Add new email for DCA"
+          aria-label="Add new email for DCA"
+          aria-describedby="addEmailButtonDCA"
+        />
+        <button class="btn btn-primary" type="button" id="addEmailButtonDCA">
+          Add Email
+        </button>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <h3>IAD</h3>
+      <ul id="emailListIAD" class="list-group mb-3"></ul>
+      <div class="input-group mb-3">
+        <input
+          type="email"
+          id="newEmailIAD"
+          class="form-control"
+          placeholder="Add new email for IAD"
+          aria-label="Add new email for IAD"
+          aria-describedby="addEmailButtonIAD"
+        />
+        <button class="btn btn-primary" type="button" id="addEmailButtonIAD">
+          Add Email
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+    </div>
+
+    <!-- Outage Log Modal -->
+    <div
+      class="modal fade"
+      id="outageLogModal"
+      tabindex="-1"
+      aria-labelledby="outageLogModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="outageLogModalLabel">
+              Outage Log for <span id="modalDeviceID"></span>
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <ul id="outageLogList" class="list-group"></ul>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fixed Footer Navbar -->
+<nav class="navbar fixed-bottom navbar-dark bg-dark">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="#">Uptime Monitor</a>
+    <ul class="navbar-nav me-auto flex-row">
+      <li class="nav-item">
+        <a class="nav-link active" href="#" id="dca-tab">DCA</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#" id="iad-tab">IAD</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#" id="admin-tab">Admin</a>
+      </li>
+      <!-- Add the Logout link -->
+      <li class="nav-item" id="logout-nav-item" style="display: none;">
+        <a class="nav-link" href="#" id="logout-link">Logout</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="firebaseConfig.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
