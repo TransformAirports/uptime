@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Email Verification - EEMW Uptime Dashboard</title>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <!-- Custom Styles (Optional) -->
+  <style>
+    body {
+      padding-top: 60px;
+      padding-bottom: 60px;
+    }
+    .container {
+      max-width: 600px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Alert Container -->
+  <div id="alert-container" class="container my-3"></div>
+
+  <!-- Main Content -->
+  <div class="container text-center">
+    <h1 id="status-title">Processing...</h1>
+    <p id="status-message">Please wait while we verify your email.</p>
+    <!-- Optional: Add a loading spinner -->
+    <div id="loading-spinner" class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <!-- Login Button (Hidden by default) -->
+    <a href="/" id="login-button" class="btn btn-primary mt-3" style="display: none;">Go to Login</a>
+  </div>
+
+  <!-- Firebase JS SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <!-- Include your Firebase configuration -->
+  <script src="firebaseConfig.js"></script>
+  <!-- Include Bootstrap JS (Optional, for alerts) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Verification Script -->
+  <script>
+    // Initialize Firebase
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+
+    // Get the action code from the URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const mode = urlParams.get('mode');
+    const actionCode = urlParams.get('oobCode');
+    const apiKey = urlParams.get('apiKey');
+    const continueUrl = urlParams.get('continueUrl');
+    const lang = urlParams.get('lang') || 'en';
+
+    // Handle the email verification action
+    if (mode === 'verifyEmail') {
+      handleVerifyEmail(actionCode);
+    } else {
+      // Invalid mode, show error message
+      showError('Invalid request.');
+    }
+
+    function handleVerifyEmail(actionCode) {
+      // Try to apply the email verification code
+      firebase.auth().applyActionCode(actionCode).then(() => {
+        // Email address has been verified
+        showSuccess('Your email has been successfully verified.');
+        // Optionally, you can sign the user in automatically here
+        // Or provide a link to the login page
+        document.getElementById('login-button').style.display = 'inline-block';
+      }).catch((error) => {
+        // Error occurred, show error message
+        console.error('Error verifying email:', error);
+        let errorMessage = 'Error verifying your email. ';
+        if (error.code === 'auth/invalid-action-code') {
+          errorMessage += 'The verification link is invalid or has expired.';
+        } else {
+          errorMessage += error.message;
+        }
+        showError(errorMessage);
+      });
+    }
+
+    function showSuccess(message) {
+      document.getElementById('status-title').textContent = 'Email Verified';
+      document.getElementById('status-message').textContent = message;
+      document.getElementById('loading-spinner').style.display = 'none';
+      showAlert(message, 'success');
+    }
+
+    function showError(message) {
+      document.getElementById('status-title').textContent = 'Error';
+      document.getElementById('status-message').textContent = message;
+      document.getElementById('loading-spinner').style.display = 'none';
+      showAlert(message, 'danger');
+    }
+
+    // Function to display Bootstrap alerts
+    function showAlert(message, type = 'info') {
+      const alertContainer = document.getElementById('alert-container');
+      const alertDiv = document.createElement('div');
+      alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+      alertDiv.role = 'alert';
+      alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      `;
+      alertContainer.appendChild(alertDiv);
+
+      // Automatically remove the alert after 5 seconds
+      setTimeout(() => {
+        alertDiv.classList.remove('show');
+        alertDiv.classList.add('hide');
+        alertDiv.addEventListener('transitionend', () => alertDiv.remove());
+      }, 5000);
+    }
+  </script>
+</body>
+</html>

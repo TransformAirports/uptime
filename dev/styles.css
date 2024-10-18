@@ -152,3 +152,12 @@ body {
     max-width: calc(8.33% - 10px);
   }
 }
+
+#alert-container {
+  position: fixed;
+  top: 60px; /* Adjust based on your navbar height */
+  right: 20px;
+  z-index: 1050;
+  width: auto;
+  max-width: 300px;
+}

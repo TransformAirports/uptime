@@ -4,7 +4,10 @@ const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const postmark = require('postmark');
 
-// Do not initialize admin again; it's already initialized in index.js
+// Initialize Firebase Admin if not already initialized
+if (!admin.apps.length) {
+  admin.initializeApp();
+}
 
 // Get Postmark API key from Firebase functions config
 const postmarkApiKey = functions.config().postmark.api_key;
@@ -13,7 +16,7 @@ const postmarkApiKey = functions.config().postmark.api_key;
 const postmarkClient = new postmark.ServerClient(postmarkApiKey);
 
 // Email addresses to CC
-const ccEmails = ['christian.kessler@mwaa.com', 'patrick.skelton@mwaa.com'];
+const ccEmails = ['christian.kessler@mwaa.com', 'patrick.skelton@mwaa.com', 'me@cgk.io'];
 
 const restrictEmailDomain = functions.auth.user().onCreate(async (user) => {
   const email = user.email || '';
@@ -25,7 +28,7 @@ const restrictEmailDomain = functions.auth.user().onCreate(async (user) => {
       await admin.auth().updateUser(user.uid, { disabled: true });
       console.log('Disabled user with email:', email);
 
-      // Optionally, send an email to notify about the disabled account
+      // Send notification email
       await postmarkClient.sendEmail({
         From: 'StratOps Uptime <uptime@transformairports.com>',
         To: email,
@@ -47,7 +50,22 @@ StratOps Uptime Team`,
     return null;
   }
 
-  // Send welcome email to the user and CC Christian and Pat
+  // Generate email verification link
+  let verificationLink;
+  try {
+    const actionCodeSettings = {
+      url: 'https://uptime.transformairports.com/', // Your custom domain
+      handleCodeInApp: false, // Use Firebase's default handler
+    };
+    verificationLink = await admin
+      .auth()
+      .generateEmailVerificationLink(email, actionCodeSettings);
+  } catch (error) {
+    console.error('Error generating email verification link:', error);
+    return null;
+  }
+
+  // Send welcome email with verification link
   try {
     await postmarkClient.sendEmail({
       From: 'StratOps Uptime <uptime@transformairports.com>',
@@ -58,7 +76,9 @@ StratOps Uptime Team`,
 
 Welcome to the EEMW Uptime Dashboard. Your account has been successfully created.
 
-You can now log in and start using the dashboard.
+Please verify your email address by clicking the link below:
+
+${verificationLink}
 
 Best regards,
 StratOps Innovation Team`,
