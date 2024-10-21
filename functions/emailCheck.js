@@ -16,7 +16,7 @@ const postmarkApiKey = functions.config().postmark.api_key;
 const postmarkClient = new postmark.ServerClient(postmarkApiKey);
 
 // Email addresses to CC
-const ccEmails = ['christian.kessler@mwaa.com', 'patrick.skelton@mwaa.com', 'me@cgk.io'];
+const ccEmails = ['christian.kessler@mwaa.com', 'patrick.skelton@mwaa.com', 'me@cgk.io', 'pskelton0330@gmail.com'];
 
 const restrictEmailDomain = functions.auth.user().onCreate(async (user) => {
   const email = user.email || '';
