@@ -161,3 +161,18 @@ body {
   width: auto;
   max-width: 300px;
 }
+
+/* Style the card headers */
+.card-header h2 {
+  margin: 0; /* Remove default margin */
+}
+
+/* Adjust card margins if necessary */
+.card {
+  margin-bottom: 20px;
+}
+
+/* Optionally, style the headings within the cards */
+.card-body h3 {
+  margin-top: 20px;
+}

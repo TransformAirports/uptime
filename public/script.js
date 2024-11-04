@@ -1,13 +1,13 @@
 // script.js
 
-// Initialize necessary variables
+// Global variables
 let deviceIntervals = {}; // Interval timers for each device (for updating timers)
-let currentDeviceStates = {}; // Placeholder for state-tracking (currently unused)
 let currentCampus; // Variable to store the current campus (DCA or IAD)
 let devicesRef; // Reference to the devices in Firebase
 let devicesListener; // Listener for the devices reference
-let phoneInputField;
-let iti;
+let phoneInputField; // Declare phoneInputField globally
+let iti; // Declare iti globally
+let functions; // Declare functions globally
 
 // Function to load Firebase config from localFirebase.json
 function loadFirebaseConfig() {
@@ -40,11 +40,12 @@ const showTabContent = (tab) => {
     signupForm.style.display = "none";
     logoutNavItem.style.display = "block";
 
-    if (tab === "Admin") {
-      adminContent.style.display = "block";
-      devicesContainer.style.display = "none";
+    if (tab === 'Admin' && window.isAdmin) {
+      adminContent.style.display = 'block';
+      devicesContainer.style.display = 'none';
       // Load admin content
       loadEmailAddresses();
+      loadUserList(); // Load users
     } else {
       adminContent.style.display = "none";
       devicesContainer.style.display = "block";
@@ -59,11 +60,10 @@ const showTabContent = (tab) => {
     devicesContainer.style.display = "none";
     logoutNavItem.style.display = "none";
   }
-};
+}
 
 // Function to start the application
 function startApp() {
-
   // Initialize phoneInputField and intl-tel-input
   phoneInputField = document.getElementById("signup-phone");
   iti = window.intlTelInput(phoneInputField, {
@@ -169,6 +169,31 @@ function startApp() {
     });
   }
 
+  // Logout Logic for the Logout button in the admin content
+  const logoutButton = document.getElementById("logout-button");
+  if (logoutButton) {
+    logoutButton.addEventListener("click", () => {
+      firebase
+        .auth()
+        .signOut()
+        .then(() => {
+          console.log("Logged out successfully");
+
+          // Remove any database listeners
+          if (devicesRef && devicesListener) {
+            devicesRef.off("value", devicesListener);
+          }
+
+          // Update the UI after logout
+          setActiveTab(currentCampus);
+        })
+        .catch((error) => {
+          console.error("Logout failed:", error);
+          showAlert("Logout failed: " + error.message, "danger");
+        });
+    });
+  }
+
   // Event listener for the sign-up button
   const signupButton = document.getElementById("signup-button");
   if (signupButton) {
@@ -252,81 +277,175 @@ function startApp() {
   // Initialize reCAPTCHA verifier
   let recaptchaVerifier;
 
-// Event listener for 'Send Verification Code' button
-const sendVerificationCodeButton = document.getElementById(
-  "send-verification-code-button"
-);
-sendVerificationCodeButton.addEventListener("click", () => {
-  let phoneNumber = iti.getNumber();
+  // Event listener for 'Send Verification Code' button
+  const sendVerificationCodeButton = document.getElementById(
+    "send-verification-code-button"
+  );
+  if (sendVerificationCodeButton) {
+    sendVerificationCodeButton.addEventListener("click", () => {
+      let phoneNumber = iti.getNumber();
 
-  if (!phoneNumber) {
-    showAlert("Please enter a valid phone number.", "warning");
-    return;
-  }
-
-  // Validate the phone number
-  if (!iti.isValidNumber()) {
-    showAlert("The phone number entered is not valid.", "warning");
-    return;
-  }
-
-  // Proceed with phone number verification using phoneNumber
-  // Set up reCAPTCHA verifier
-  if (!recaptchaVerifier) {
-    recaptchaVerifier = new firebase.auth.RecaptchaVerifier(
-      "recaptcha-container",
-      {
-        size: "invisible",
+      if (!phoneNumber) {
+        showAlert("Please enter a valid phone number.", "warning");
+        return;
       }
-    );
-  } else {
-    recaptchaVerifier.clear();
-    recaptchaVerifier = new firebase.auth.RecaptchaVerifier(
-      "recaptcha-container",
-      {
-        size: "invisible",
+
+      // Validate the phone number
+      if (!iti.isValidNumber()) {
+        showAlert("The phone number entered is not valid.", "warning");
+        return;
       }
-    );
-  }
 
-  const appVerifier = recaptchaVerifier;
+      // Proceed with phone number verification using phoneNumber
+      // Set up reCAPTCHA verifier
+      if (!recaptchaVerifier) {
+        recaptchaVerifier = new firebase.auth.RecaptchaVerifier(
+          "recaptcha-container",
+          {
+            size: "invisible",
+          }
+        );
+      } else {
+        recaptchaVerifier.clear();
+        recaptchaVerifier = new firebase.auth.RecaptchaVerifier(
+          "recaptcha-container",
+          {
+            size: "invisible",
+          }
+        );
+      }
 
-  const phoneProvider = new firebase.auth.PhoneAuthProvider();
-  phoneProvider
-    .verifyPhoneNumber(phoneNumber, appVerifier)
-    .then((verificationId) => {
-      window.verificationId = verificationId;
-      showAlert("Verification code sent to your phone.", "success");
-      document.getElementById("verification-code-div").style.display = "block";
-      document.getElementById("create-account-button").style.display = "block";
-      sendVerificationCodeButton.style.display = "none";
-    })
-    .catch((error) => {
-      console.error("Error during phone number verification:", error);
-      showAlert("Error sending verification code: " + error.message, "danger");
+      const appVerifier = recaptchaVerifier;
+
+      const phoneProvider = new firebase.auth.PhoneAuthProvider();
+      phoneProvider
+        .verifyPhoneNumber(phoneNumber, appVerifier)
+        .then((verificationId) => {
+          window.verificationId = verificationId;
+          showAlert("Verification code sent to your phone.", "success");
+          document.getElementById("verification-code-div").style.display = "block";
+          document.getElementById("create-account-button").style.display = "block";
+          sendVerificationCodeButton.style.display = "none";
+        })
+        .catch((error) => {
+          console.error("Error during phone number verification:", error);
+          showAlert("Error sending verification code: " + error.message, "danger");
+        });
     });
-});
+  }
 
   // Monitor authentication state and update UI accordingly
   firebase.auth().onAuthStateChanged((user) => {
     if (user) {
-      // User is signed in
-      setActiveTab(currentCampus);
+      checkAdminStatus(user.uid).then((isAdmin) => {
+        window.isAdmin = isAdmin;
+        setActiveTab(currentCampus);
+        // Show or hide the Admin tab based on admin status
+        toggleAdminTab(isAdmin);
+      });
     } else {
-      // User is signed out
-
-      // Remove devices listener
-      if (devicesRef && devicesListener) {
-        devicesRef.off("value", devicesListener);
-      }
-
-      showTabContent("login");
+      window.isAdmin = false;
+      setActiveTab('login');
+      toggleAdminTab(false);
     }
+  });
+}
+
+function checkAdminStatus(uid) {
+  return firebase
+    .database()
+    .ref(`/admins/${uid}`)
+    .once('value')
+    .then((snapshot) => {
+      return snapshot.exists();
+    });
+}
+
+function toggleAdminTab(isAdmin) {
+  const adminNavItem = document.getElementById('admin-nav-item');
+  if (adminNavItem) {
+    if (isAdmin) {
+      adminNavItem.style.display = 'block';
+    } else {
+      adminNavItem.style.display = 'none';
+    }
+  }
+}
+
+function loadUserList() {
+  const listUsers = functions.httpsCallable('listUsers');
+  listUsers()
+    .then((result) => {
+      const users = result.data.users;
+      const userList = document.getElementById('user-list');
+      userList.innerHTML = ''; // Clear the list
+      users.forEach((user) => {
+        const listItem = document.createElement('li');
+        listItem.className =
+          'list-group-item d-flex justify-content-between align-items-center';
+        listItem.textContent = user.email;
+        const deleteButton = document.createElement('button');
+        deleteButton.className = 'btn btn-danger btn-sm';
+        deleteButton.textContent = 'Delete';
+        deleteButton.onclick = () => deleteUser(user.uid);
+        listItem.appendChild(deleteButton);
+        userList.appendChild(listItem);
+      });
+    })
+    .catch((error) => {
+      console.error('Error listing users:', error);
+      showAlert('Error listing users: ' + error.message, 'danger');
+    });
+}
+
+function deleteUser(uid) {
+  const deleteUserFunction = functions.httpsCallable('deleteUser');
+  deleteUserFunction({ uid })
+    .then(() => {
+      showAlert('User deleted successfully.', 'success');
+      loadUserList();
+    })
+    .catch((error) => {
+      console.error('Error deleting user:', error);
+      showAlert('Error deleting user: ' + error.message, 'danger');
+    });
+}
+
+const createUserButton = document.getElementById('create-user-button');
+if (createUserButton) {
+  createUserButton.addEventListener('click', () => {
+    const email = document.getElementById('new-user-email').value;
+    const password = document.getElementById('new-user-password').value;
+
+    // Enforce email domain restriction
+    const emailDomain = email.substring(email.lastIndexOf('@') + 1).toLowerCase();
+    if (emailDomain !== 'mwaa.com') {
+      showAlert('Email domain must be mwaa.com.', 'warning');
+      return;
+    }
+
+    // Call the Cloud Function to create a new user
+    const createUser = functions.httpsCallable('createUser');
+    createUser({ email, password })
+      .then((result) => {
+        showAlert('User created successfully.', 'success');
+        document.getElementById('new-user-email').value = '';
+        document.getElementById('new-user-password').value = '';
+        loadUserList();
+      })
+      .catch((error) => {
+        console.error('Error creating user:', error);
+        showAlert('Error creating user: ' + error.message, 'danger');
+      });
   });
 }
 
 // Function to set the active tab and update the URL
 const setActiveTab = (tab) => {
+  if (tab === 'Admin' && !window.isAdmin) {
+    showAlert('Access denied: Admins only.', 'danger');
+    return;
+  }
   document.querySelectorAll(".nav-link").forEach((link) => {
     link.classList.remove("active");
   });
@@ -733,17 +852,11 @@ document.addEventListener("DOMContentLoaded", function () {
   loadFirebaseConfig()
     .then(() => {
       console.log("Firebase config loaded and initialized.");
+
+      // Initialize Firebase Functions
+      functions = firebase.functions();
+
       startApp(); // Start the application
-
- // Initialize intl-tel-input
- const phoneInputField = document.getElementById("signup-phone");
- const iti = window.intlTelInput(phoneInputField, {
-   initialCountry: "us",
-   separateDialCode: true,
-   utilsScript:
-     "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
- });
-
     })
     .catch((err) => {
       console.error("Failed to initialize Firebase:", err);

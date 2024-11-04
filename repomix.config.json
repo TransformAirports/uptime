@@ -2,7 +2,7 @@
   "output": {
     "filePath": "repomix-output.txt",
     "style": "plain",
-    "headerText": "This is my entire codebase:",
+    "headerText": "Files in the /functions folder are Firebase Functions",
     "removeComments": false,
     "removeEmptyLines": false,
     "topFilesLength": 5,
@@ -11,14 +11,16 @@
   "include": [
     "dev/**/*.js",
     "dev/**/*.html",
-    "dev/**/*.css"
+    "dev/**/*.css",
+    "functions/**/*.js"
   ],
   "ignore": {
     "useGitignore": false,
     "useDefaultPatterns": false,
     "customPatterns": [
       "**/*.min.js",
-      "**/*.min.css"
+      "**/*.min.css",
+      "functions/node_modules/**/*"
     ]
   },
   "security": {
