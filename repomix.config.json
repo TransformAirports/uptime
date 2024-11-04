@@ -1,0 +1,27 @@
+{
+  "output": {
+    "filePath": "repomix-output.txt",
+    "style": "plain",
+    "headerText": "This is my entire codebase:",
+    "removeComments": false,
+    "removeEmptyLines": false,
+    "topFilesLength": 5,
+    "showLineNumbers": false
+  },
+  "include": [
+    "dev/**/*.js",
+    "dev/**/*.html",
+    "dev/**/*.css"
+  ],
+  "ignore": {
+    "useGitignore": false,
+    "useDefaultPatterns": false,
+    "customPatterns": [
+      "**/*.min.js",
+      "**/*.min.css"
+    ]
+  },
+  "security": {
+    "enableSecurityCheck": true
+  }
+}

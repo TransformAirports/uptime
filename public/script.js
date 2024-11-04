@@ -6,6 +6,8 @@ let currentDeviceStates = {}; // Placeholder for state-tracking (currently unuse
 let currentCampus; // Variable to store the current campus (DCA or IAD)
 let devicesRef; // Reference to the devices in Firebase
 let devicesListener; // Listener for the devices reference
+let phoneInputField;
+let iti;
 
 // Function to load Firebase config from localFirebase.json
 function loadFirebaseConfig() {
@@ -61,6 +63,16 @@ const showTabContent = (tab) => {
 
 // Function to start the application
 function startApp() {
+
+  // Initialize phoneInputField and intl-tel-input
+  phoneInputField = document.getElementById("signup-phone");
+  iti = window.intlTelInput(phoneInputField, {
+    initialCountry: "us",
+    separateDialCode: true,
+    utilsScript:
+      "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
+  });
+
   // Set the campus based on URL parameter or default to DCA
   currentCampus = getCampusFromURL();
   setActiveTab(currentCampus);
@@ -112,7 +124,8 @@ function startApp() {
       firebase
         .auth()
         .signInWithEmailAndPassword(email, password)
-        .then(() => {
+        .then((userCredential) => {
+          // User signed in successfully
           console.log("Logged in successfully");
           setActiveTab(currentCampus); // Update the UI after login
         })
@@ -180,27 +193,54 @@ function startApp() {
     createAccountButton.addEventListener("click", () => {
       const email = document.getElementById("signup-email").value;
       const password = document.getElementById("signup-password").value;
-  
+      const verificationCode = document.getElementById("verification-code").value;
+
       // Client-side check for MWAA email
       if (!email.endsWith("@mwaa.com")) {
         showAlert("Only MWAA email addresses are allowed.", "warning");
         return;
       }
-  
+
+      if (!verificationCode) {
+        showAlert(
+          "Please enter the verification code sent to your phone.",
+          "warning"
+        );
+        return;
+      }
+
+      // Create email/password user
       firebase
         .auth()
         .createUserWithEmailAndPassword(email, password)
-        .then(() => {
-          console.log("Account created successfully");
-          showAlert(
-            "Account created successfully. Please check your email for verification.",
-            "success"
+        .then((userCredential) => {
+          const user = userCredential.user;
+
+          // Create a PhoneAuthCredential with the code
+          const credential = firebase.auth.PhoneAuthProvider.credential(
+            window.verificationId,
+            verificationCode
           );
-          // Sign out the user to force a login attempt
-          firebase.auth().signOut();
-          // Redirect to login form
-          document.getElementById("signup-form").style.display = "none";
-          document.getElementById("login-form").style.display = "block";
+
+          // Link the phone number to the user
+          user
+            .linkWithCredential(credential)
+            .then(() => {
+              showAlert(
+                "Account created and phone number linked successfully.",
+                "success"
+              );
+              // Redirect to login form
+              document.getElementById("signup-form").style.display = "none";
+              document.getElementById("login-form").style.display = "block";
+            })
+            .catch((error) => {
+              console.error("Error linking phone number:", error);
+              showAlert(
+                "Error linking phone number: " + error.message,
+                "danger"
+              );
+            });
         })
         .catch((error) => {
           console.error("Account creation failed:", error);
@@ -209,17 +249,69 @@ function startApp() {
     });
   }
 
+  // Initialize reCAPTCHA verifier
+  let recaptchaVerifier;
+
+// Event listener for 'Send Verification Code' button
+const sendVerificationCodeButton = document.getElementById(
+  "send-verification-code-button"
+);
+sendVerificationCodeButton.addEventListener("click", () => {
+  let phoneNumber = iti.getNumber();
+
+  if (!phoneNumber) {
+    showAlert("Please enter a valid phone number.", "warning");
+    return;
+  }
+
+  // Validate the phone number
+  if (!iti.isValidNumber()) {
+    showAlert("The phone number entered is not valid.", "warning");
+    return;
+  }
+
+  // Proceed with phone number verification using phoneNumber
+  // Set up reCAPTCHA verifier
+  if (!recaptchaVerifier) {
+    recaptchaVerifier = new firebase.auth.RecaptchaVerifier(
+      "recaptcha-container",
+      {
+        size: "invisible",
+      }
+    );
+  } else {
+    recaptchaVerifier.clear();
+    recaptchaVerifier = new firebase.auth.RecaptchaVerifier(
+      "recaptcha-container",
+      {
+        size: "invisible",
+      }
+    );
+  }
+
+  const appVerifier = recaptchaVerifier;
+
+  const phoneProvider = new firebase.auth.PhoneAuthProvider();
+  phoneProvider
+    .verifyPhoneNumber(phoneNumber, appVerifier)
+    .then((verificationId) => {
+      window.verificationId = verificationId;
+      showAlert("Verification code sent to your phone.", "success");
+      document.getElementById("verification-code-div").style.display = "block";
+      document.getElementById("create-account-button").style.display = "block";
+      sendVerificationCodeButton.style.display = "none";
+    })
+    .catch((error) => {
+      console.error("Error during phone number verification:", error);
+      showAlert("Error sending verification code: " + error.message, "danger");
+    });
+});
+
   // Monitor authentication state and update UI accordingly
   firebase.auth().onAuthStateChanged((user) => {
     if (user) {
-      if (user.emailVerified) {
-        // User is signed in and email is verified
-        setActiveTab(currentCampus);
-      } else {
-        // Email not verified
-        showAlert("Please verify your email before logging in.", "warning");
-        firebase.auth().signOut();
-      }
+      // User is signed in
+      setActiveTab(currentCampus);
     } else {
       // User is signed out
 
@@ -238,7 +330,10 @@ const setActiveTab = (tab) => {
   document.querySelectorAll(".nav-link").forEach((link) => {
     link.classList.remove("active");
   });
-  document.getElementById(`${tab.toLowerCase()}-tab`).classList.add("active");
+  const tabElement = document.getElementById(`${tab.toLowerCase()}-tab`);
+  if (tabElement) {
+    tabElement.classList.add("active");
+  }
 
   history.pushState({}, "", `?campus=${tab}`);
 
@@ -639,6 +734,16 @@ document.addEventListener("DOMContentLoaded", function () {
     .then(() => {
       console.log("Firebase config loaded and initialized.");
       startApp(); // Start the application
+
+ // Initialize intl-tel-input
+ const phoneInputField = document.getElementById("signup-phone");
+ const iti = window.intlTelInput(phoneInputField, {
+   initialCountry: "us",
+   separateDialCode: true,
+   utilsScript:
+     "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
+ });
+
     })
     .catch((err) => {
       console.error("Failed to initialize Firebase:", err);
