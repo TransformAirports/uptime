@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1480, height=320, initial-scale=1.0">
+  <title>Escalators Display</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #000;
+      font-family: sans-serif;
+      color: #fff;
+      width: 1480px;
+      height: 320px;
+      overflow: hidden; /* Keep hidden if you don't need scrolling */
+    }
+
+    .grid-container {
+      display: flex;
+      flex-direction: row;
+      width: 1480px;
+      height: 320px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .square {
+      flex: 1 1 25%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #333;
+      position: relative;
+      cursor: pointer;
+      box-sizing: border-box;
+    }
+
+    .escalator-icon {
+      margin-bottom: 10px;
+      width: 40px;
+      height: 40px;
+      background: url('escalator.png') no-repeat center center;
+      background-size: contain;
+    }
+
+    .escalator-name {
+      font-size: 24px;
+      text-align: center;
+      font-weight: bold;
+      margin-bottom: 10px;
+      padding: 0 10px;
+    }
+
+    .last-checkin {
+      position: absolute;
+      bottom: 10px;
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    /* Full screen overlay for stats */
+    .overlay {
+      display: none; /* Start hidden */
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 1480px;
+      height: 320px;
+      background: rgba(0,0,0,0.9);
+      z-index: 9999;
+      box-sizing: border-box;
+      flex-direction: column;
+    }
+
+    .overlay.active {
+      display: flex; /* Show when active */
+    }
+
+    /* Divide the overlay into three vertical sections */
+    .overlay-header,
+    .overlay-body,
+    .overlay-footer {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .overlay-header h2 {
+      margin: 0;
+      font-size: 28px;
+      text-align: center;
+    }
+
+    .stats-container {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: flex-start;
+      width: 100%;
+      max-width: 800px;
+    }
+
+    .stat-box {
+      flex: 1;
+      margin: 0 20px;
+      text-align: center;
+      font-size: 20px;
+      line-height: 1.5;
+    }
+
+    .stat-title {
+      font-weight: bold;
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    .close-button {
+      background: #ff0000;
+      color: #fff;
+      padding: 10px 20px;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    .loading {
+      font-size: 18px;
+      text-align: center;
+      opacity: 0.6;
+    }
+  </style>
+</head>
+<body>
+  <div class="grid-container">
+    <div class="square" data-ref="devices/IAD/escalator/escalator-metro-walkback-1">
+      <!-- If data not loaded yet, show a placeholder -->
+      <div class="escalator-icon"></div>
+      <div class="escalator-name">Loading...</div>
+    </div>
+    <div class="square" data-ref="devices/IAD/escalator/escalator-metro-walkback-2">
+      <div class="escalator-icon"></div>
+      <div class="escalator-name">Loading...</div>
+    </div>
+    <div class="square" data-ref="devices/IAD/escalator/escalator-metro-walkback-3">
+      <div class="escalator-icon"></div>
+      <div class="escalator-name">Loading...</div>
+    </div>
+    <div class="square" data-ref="devices/IAD/escalator/escalator-metro-walkback-4">
+      <div class="escalator-icon"></div>
+      <div class="escalator-name">Loading...</div>
+    </div>
+  </div>
+
+  <div class="overlay" id="overlay">
+    <div class="overlay-header">
+      <h2 id="overlay-title">Escalator Stats</h2>
+    </div>
+    <div class="overlay-body">
+      <div class="stats-container">
+        <div class="stat-box" id="offline-box">
+          <span class="stat-title">Total hours offline this month:</span>
+          <span id="offline-hours"></span>
+        </div>
+        <div class="stat-box" id="uptime-box">
+          <span class="stat-title">Uptime percentage this month:</span>
+          <span id="uptime-percentage"></span>
+        </div>
+      </div>
+    </div>
+    <div class="overlay-footer">
+      <button class="close-button" id="close-button">Back</button>
+    </div>
+  </div>
+
+  <!-- Firebase Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  
+  <script>
+    // Function to load Firebase config from localFirebase.json
+    function loadFirebaseConfig() {
+      return fetch("localFirebase.json") // Fetch the Firebase configuration
+        .then((response) => response.json()) // Parse the JSON file
+        .then((config) => {
+          // Initialize Firebase with the loaded config
+          firebase.initializeApp(config);
+          return config;
+        })
+        .catch((error) => {
+          console.error("Error loading Firebase config:", error);
+          throw error; // Re-throw the error after logging it
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadFirebaseConfig()
+        .then(() => {
+          const squares = document.querySelectorAll('.square');
+          const overlay = document.getElementById('overlay');
+          const overlayTitle = document.getElementById('overlay-title');
+          const offlineHoursEl = document.getElementById('offline-hours');
+          const uptimePercentageEl = document.getElementById('uptime-percentage');
+          const closeButton = document.getElementById('close-button');
+
+          let escalatorsData = [];
+
+          squares.forEach((square, index) => {
+            const refPath = square.getAttribute('data-ref');
+            const dbRef = firebase.database().ref(refPath);
+
+            dbRef.on('value', (snapshot) => {
+              const data = snapshot.val();
+              if (!data) return; // If no data, don't try to update
+              escalatorsData[index] = data;
+              updateSquare(square, data);
+            });
+
+            // Click event to show overlay
+            square.addEventListener('click', () => {
+              if (escalatorsData[index]) {
+                showOverlay(escalatorsData[index]);
+              }
+            });
+          });
+
+          // Update square UI based on data
+          function updateSquare(square, data) {
+            square.innerHTML = ''; // Clear previous content
+            const name = data.name || 'Unknown Escalator';
+
+            // Determine box color
+            let boxColor = (data.power === false || data.alarm === true) ? 'red' : 'green';
+            square.style.background = boxColor;
+
+            // Icon element
+            const iconEl = document.createElement('div');
+            iconEl.classList.add('escalator-icon');
+            square.appendChild(iconEl);
+
+            // Name element
+            const nameEl = document.createElement('div');
+            nameEl.classList.add('escalator-name');
+            nameEl.textContent = name;
+            square.appendChild(nameEl);
+
+            // Last check-in
+            const checkInEl = document.createElement('div');
+            checkInEl.classList.add('last-checkin');
+            square.appendChild(checkInEl);
+
+            // Store last_statuscheck_timestamp for interval updates
+            square.lastCheckIn = data.last_statuscheck_timestamp;
+          }
+
+          // Update last check-in times every second
+          setInterval(() => {
+            const now = Math.floor(Date.now() / 1000);
+            squares.forEach((square) => {
+              const checkInEl = square.querySelector('.last-checkin');
+              if (checkInEl && square.lastCheckIn) {
+                const diff = now - square.lastCheckIn;
+                if (diff < 60) {
+                  checkInEl.textContent = `${diff} seconds since last check-in`;
+                } else {
+                  const minutes = Math.floor(diff / 60);
+                  checkInEl.textContent = `${minutes} minutes since last check-in`;
+                }
+              }
+            });
+          }, 1000);
+
+          function showOverlay(data) {
+            overlay.classList.add('active');
+            overlayTitle.textContent = data.name || 'Escalator Stats';
+            
+            if (data.currentMonthUptime) {
+              const totalOfflineHours = data.currentMonthUptime.totalOfflineHours || 0;
+              const uptimePercentage = data.currentMonthUptime.uptimePercentage || 0;
+              
+              // Format to two decimal places
+              offlineHoursEl.textContent = totalOfflineHours.toFixed(2);
+              uptimePercentageEl.textContent = uptimePercentage.toFixed(2) + '%';
+            } else {
+              offlineHoursEl.textContent = 'N/A';
+              uptimePercentageEl.textContent = 'N/A';
+            }
+          }
+
+          closeButton.addEventListener('click', () => {
+            overlay.classList.remove('active');
+          });
+
+        })
+        .catch(err => {
+          console.error("Initialization error:", err);
+        });
+    });
+  </script>
+</body>
+</html>
