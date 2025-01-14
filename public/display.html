@@ -13,7 +13,7 @@
       color: #fff;
       width: 1480px;
       height: 320px;
-      overflow: hidden; /* Keep hidden if you don't need scrolling */
+      overflow: hidden;
     }
 
     .grid-container {
@@ -35,13 +35,13 @@
       position: relative;
       box-sizing: border-box;
       padding: 10px;
-      transition: background-color 0.3s ease; /* Smooth color transitions */
+      transition: background-color 0.3s ease;
     }
 
     .escalator-icon {
-      margin: 10px 0;
-      width: 40px;
-      height: 40px;
+      margin: 35px 0;
+      width: 100px;
+      height: 100px;
       background: url('escalator.png') no-repeat center center;
       background-size: contain;
     }
@@ -51,6 +51,14 @@
       text-align: center;
       font-weight: bold;
       margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .arrow-icon {
+      font-size: 28px; /* Adjust arrow size */
+      margin-left: 8px; /* Add some space between text and arrow */
     }
 
     .stat {
@@ -122,7 +130,7 @@
         .then(() => {
           const squares = document.querySelectorAll('.square');
 
-          squares.forEach((square, index) => {
+          squares.forEach((square) => {
             const refPath = square.getAttribute('data-ref');
             const dbRef = firebase.database().ref(refPath);
 
@@ -145,7 +153,20 @@
 
             const nameEl = document.createElement('div');
             nameEl.classList.add('escalator-name');
-            nameEl.textContent = data.name || 'Unknown Escalator';
+
+            // Add escalator name and up/down icon
+            const nameText = document.createElement('span');
+            nameText.textContent = data.name || 'Unknown Escalator';
+
+            const arrowEl = document.createElement('span');
+            arrowEl.classList.add('arrow-icon');
+            if (data.name?.toLowerCase().includes('up')) {
+              arrowEl.textContent = '↑'; // Up arrow
+            } else if (data.name?.toLowerCase().includes('down')) {
+              arrowEl.textContent = '↓'; // Down arrow
+            }
+
+            nameEl.append(nameText, arrowEl);
 
             const offlineEl = document.createElement('div');
             offlineEl.classList.add('stat');
