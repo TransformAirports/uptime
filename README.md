@@ -175,9 +175,11 @@ This project utilizes a variety of Software as a Service (SaaS) products to ensu
 | type       | String  | Type of the device; must be one of the following: `escalator`, `elevator`, or `movingsidewalk`. | Yes      |
 | power      | Boolean | The current power status of the device; `true` for powered, `false` for offline.  | Yes      |
 | alarm      | Boolean | The current alarm status of the device; `true` for no alarm, `false` for alarm triggered. | Yes      |
-| apikey      | String | API key | Yes      |
+| api_key    | String | API key used to authorize requests; must match the server's secret. | Yes      |
 
 ---
+
+All requests must include a valid `api_key` that matches the `SECRET_API_KEY` configured in Firebase Functions.
 
 #### Example Request
 
@@ -187,11 +189,11 @@ Below is an example of how to send data to the API using `curl`:
 curl --location 'https://us-central1-uptime-eb91e.cloudfunctions.net/updateUptime' \
 --header 'Content-Type: application/json' \
 --data '{
+  "api_key": "XXX",
   "deviceID": "Escalator01",
   "type": "escalator",
   "power": true,
-  "alarm": true,
-  "apikey": "XXX"
+  "alarm": true
 }'
 ```
 
