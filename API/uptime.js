@@ -5,8 +5,8 @@ const admin = require('firebase-admin');
 const postmark = require('postmark');
 const { DateTime } = require('luxon'); // Import Luxon for time zone management
 
-// Get Postmark API key from Firebase functions config
-const postmarkApiKey = functions.config().postmark.api_key;
+// Get Postmark API key from Firebase secret
+const postmarkApiKey = process.env.SECRET_POSTMARK_API;
 
 // Create a Postmark client instance
 const postmarkClient = new postmark.ServerClient(postmarkApiKey);
@@ -65,7 +65,7 @@ async function sendOutageEmail(deviceID, type, timestamp, apiKey) {
 
 // Function to update device uptime
 const uptime = functions
-  .runWith({ secrets: ['SECRET_API_KEY'] })
+  .runWith({ secrets: ['SECRET_API_KEY', 'SECRET_POSTMARK_API'] })
   .https.onRequest(async (req, res) => {
     if (req.method !== 'POST') {
       return res.status(405).send('Method Not Allowed');
