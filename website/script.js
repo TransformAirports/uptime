@@ -2,7 +2,6 @@
 
 // Global variables
 let deviceIntervals = {}; // Interval timers for each device (for updating timers)
-let currentCampus; // Variable to store the current campus (DCA or IAD)
 let devicesRef; // Reference to the devices in Firebase
 let devicesListener; // Listener for the devices reference
 
@@ -22,57 +21,20 @@ function loadFirebaseConfig() {
     });
 }
 
-// Function to set the active tab and update the URL
-const setActiveTab = (tab) => {
-  document.querySelectorAll('.nav-link').forEach((link) => {
-    link.classList.remove('active');
-  });
-  const tabElement = document.getElementById(`${tab.toLowerCase()}-tab`);
-  if (tabElement) {
-    tabElement.classList.add('active');
-  }
-
-  history.pushState({}, '', `?campus=${tab}`);
-
-  loadDevices();
-};
-
-// Function to start the application
-function startApp() {
-  // Set the campus based on URL parameter or default to DCA
-  currentCampus = getCampusFromURL();
-  setActiveTab(currentCampus);
-
-  // Event listeners for campus tab switching
-  const dcaTab = document.getElementById('dca-tab');
-  const iadTab = document.getElementById('iad-tab');
-
-  if (dcaTab) {
-    dcaTab.addEventListener('click', () => {
-      currentCampus = 'DCA';
-      setActiveTab(currentCampus);
-    });
-  }
-
-  if (iadTab) {
-    iadTab.addEventListener('click', () => {
-      currentCampus = 'IAD';
-      setActiveTab(currentCampus);
-    });
-  }
-}
+// No campus selection; devices are loaded directly from the root
 
 // Attach click listeners to the device cards for showing outage logs
 const attachCardEventListeners = () => {
   document.querySelectorAll('.device-card').forEach((card) => {
     card.addEventListener('click', (event) => {
       const deviceID = event.currentTarget.getAttribute('data-id');
-      showOutageLogs(deviceID);
+      const type = event.currentTarget.getAttribute('data-type');
+      showOutageLogs(deviceID, type);
     });
   });
 };
 
-// Load and display devices for the selected campus (DCA or IAD)
+// Load and display devices
 const loadDevices = () => {
   const db = firebase.database();
 
@@ -81,7 +43,7 @@ const loadDevices = () => {
     devicesRef.off('value', devicesListener);
   }
 
-  devicesRef = db.ref(`/devices/${currentCampus}`);
+  devicesRef = db.ref(`/devices`);
 
   devicesListener = devicesRef.on(
     'value',
@@ -176,6 +138,7 @@ const loadDevices = () => {
             const deviceDiv = document.createElement('div');
             deviceDiv.classList.add('device-card');
             deviceDiv.setAttribute('data-id', deviceID);
+            deviceDiv.setAttribute('data-type', type);
 
             // Prepare extra info HTML if device is monitored
             let extraInfoHTML = '';
@@ -291,7 +254,7 @@ const loadDevices = () => {
 };
 
 // Function to show outage logs in a modal
-const showOutageLogs = (deviceID) => {
+const showOutageLogs = (deviceID, type) => {
   const outageLogList = document.getElementById('outageLogList');
   const modalDeviceID = document.getElementById('modalDeviceID');
 
@@ -302,7 +265,7 @@ const showOutageLogs = (deviceID) => {
   // Reference to the outage logs in Firebase
   const outageLogsRef = firebase
     .database()
-    .ref(`/outageLogs/${currentCampus}/elevator/${deviceID}/outages`)
+    .ref(`/outageLogs/${type}/${deviceID}/outages`)
     .limitToLast(10);
   outageLogsRef.once('value', (snapshot) => {
     const outages = snapshot.val();
@@ -345,12 +308,6 @@ const showOutageLogs = (deviceID) => {
   });
 };
 
-// Function to get the campus from the URL parameters
-const getCampusFromURL = () => {
-  const params = new URLSearchParams(window.location.search);
-  return params.get('campus') || 'DCA'; // Default to DCA if no campus is specified
-};
-
 // Function to show Bootstrap alerts
 function showAlert(message, type = 'info') {
   const alertContainer = document.getElementById('alert-container');
@@ -378,7 +335,7 @@ document.addEventListener('DOMContentLoaded', function () {
     .then(() => {
       console.log('Firebase config loaded and initialized.');
 
-      startApp(); // Start the application
+      loadDevices();
     })
     .catch((err) => {
       console.error('Failed to initialize Firebase:', err);
