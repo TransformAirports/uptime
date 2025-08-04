@@ -63,7 +63,7 @@ const updateUptime = functions
       return res.status(405).send('Method Not Allowed');
     }
 
-    const { api_key, deviceID, type, power, alarm } = req.body;
+    const { api_key, deviceID, type, power, alarm, device_name } = req.body;
 
     // Validate API key
     if (!api_key) {
@@ -75,7 +75,14 @@ const updateUptime = functions
     }
 
     // Validate the request body
-    if (!deviceID || !type || typeof power !== 'boolean' || typeof alarm !== 'boolean') {
+    if (
+      !deviceID ||
+      !type ||
+      typeof power !== 'boolean' ||
+      typeof alarm !== 'boolean' ||
+      typeof device_name !== 'string' ||
+      device_name.trim() === ''
+    ) {
       return res.status(400).send('Missing or incorrect required parameters');
     }
 
@@ -91,6 +98,7 @@ const updateUptime = functions
     const now = Math.floor(Date.now() / 1000);
     let updates = {
       last_statuscheck_timestamp: now,
+      device_name,
     };
 
     let triggerEmail = false;
@@ -118,6 +126,7 @@ const updateUptime = functions
         alarm,
         last_statuscheck_timestamp: now,
         lastStatusChangeTimestamp: now,
+        device_name,
       };
 
       // If the device is offline during its first entry, prepare to send an email
