@@ -83,7 +83,7 @@ The system monitors EEMWs and notifies relevant stakeholders via email when an o
 
 ### Dashboard Access
 
-The dashboard tool is accessible via uptime.transformairports.com and requires a username and password. Admins can log in to manage alert email addresses for different campuses.
+The dashboard tool is accessible via uptime.transformairports.com and does not require authentication.
 
 ## Maintenance and Monitoring
 
@@ -154,11 +154,6 @@ This project utilizes a variety of Software as a Service (SaaS) products to ensu
 - **Purpose**: Hosts the static HTML, JavaScript, and CSS files for the Uptime Dashboard.
 - **Functionality**: Firebase Hosting provides fast and secure hosting for web applications. The dashboard, accessible at [uptime.transformairports.com](https://uptime.transformairports.com/), is served from this platform, allowing stakeholders to monitor the status of EEMWs in real-time.
 
-#### Google Firebase Authentication
-
-- **Purpose**: Ensures that only authorized users with MWAA.com email addresses can administer the site.
-- **Functionality**: Firebase Authentication manages user identity and access control, providing a secure way to authenticate users and restrict access to the administration features of the dashboard. This ensures that only permitted personnel can modify settings or manage alert email addresses.
-
 #### Postmark
 
 - **Purpose**: Used for sending transactional alert emails when a device goes offline.
@@ -223,4 +218,4 @@ Contributions to this project are managed through GitHub. For significant change
 
 ## License
 
-This project is intended for MWAA internal use only. Unauthorized use or distribution outside of MWAA is prohibited.
+This project is open source under the MIT License. See [LICENSE](LICENSE) for details.
