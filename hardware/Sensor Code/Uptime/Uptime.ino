@@ -1,54 +1,80 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
 
+// ================================================================
+// Uptime Monitoring Firmware
+// ------------------------------------------------
+// This sketch runs on an ESP32 and reports the power and alarm
+// state of up to three transportation devices (elevators, escalators
+// or moving sidewalks). Each second it checks the GPIO inputs and,
+// when a change is detected or at a scheduled interval, posts the
+// current status to the Uptime Cloud API.
+// ================================================================
+
+// ----------------------------------------------------------------
 // Wi-Fi credentials
+// Replace these with the credentials for the network the sensor
+// should connect to. The device will continuously attempt to
+// maintain this connection while running.
+// ----------------------------------------------------------------
 const char* ssid = "InnovationNet";
 const char* password = "Mwaa1987!";
 
-// API endpoint
+// URL for the backend Cloud Function that receives status updates.
 const char* apiURL = "https://us-central1-uptime-eb91e.cloudfunctions.net/uptime";
 
-// API key for authentication
+// API key used by the server to authenticate this device.
+// Replace with a real key before deployment.
 const char* apiKey = "YOUR_API_KEY";
 
+// ----------------------------------------------------------------
+// Configuration for each monitored unit
+// Each ESP32 can report on up to three physical devices. Each
+// device needs a unique ID and a device type string that is
+// understood by the server.
+// ----------------------------------------------------------------
 // Unit 1 configuration
 const char* deviceID1 = "Sidewalk01";  // Unique ID for each ESP32
-const char* type1 = "sidewalk";  // Options: "elevator", "escalator", "sidewalk"
+const char* type1 = "sidewalk";        // Options: "elevator", "escalator", "sidewalk"
 
 // Unit 2 configuration
 const char* deviceID2 = "Sidewalk02";  // Unique ID for each ESP32
-const char* type2 = "sidewalk";  // Options: "elevator", "escalator", "sidewalk"
+const char* type2 = "sidewalk";        // Options: "elevator", "escalator", "sidewalk"
 
 // Unit 3 configuration
 const char* deviceID3 = "Sidewalk03";  // Unique ID for each ESP32
-const char* type3 = "sidewalk";  // Options: "elevator", "escalator", "sidewalk"
+const char* type3 = "sidewalk";        // Options: "elevator", "escalator", "sidewalk"
 
-// Enable or disable the second and third units
+// Enable or disable optional units at compile time. When disabled,
+// the device will ignore the corresponding GPIO pins and will not
+// send any data for that unit.
 bool enableSecondUnit = true;
 bool enableThirdUnit = true;
 
-// Active high or active low configuration for each input pin
+// Active-high/low configuration for each input pin. Some sensors pull
+// the line low when active, others pull it high. These flags allow the
+// code to normalize the readings to simple true/false values.
 // Device 1
-bool powerPin1ActiveHigh = true;  // true for active high, false for active low
-bool alarmPin1ActiveHigh = true;  // true for active high, false for active low
+bool powerPin1ActiveHigh = true;   // true for active high, false for active low
+bool alarmPin1ActiveHigh = true;   // true for active high, false for active low
 
 // Device 2
-bool powerPin2ActiveHigh = true;  // true for active high, false for active low
-bool alarmPin2ActiveHigh = true;  // true for active high, false for active low
+bool powerPin2ActiveHigh = true;   // true for active high, false for active low
+bool alarmPin2ActiveHigh = true;   // true for active high, false for active low
 
 // Device 3
-bool powerPin3ActiveHigh = true;  // true for active high, false for active low
-bool alarmPin3ActiveHigh = true;  // true for active high, false for active low
+bool powerPin3ActiveHigh = true;   // true for active high, false for active low
+bool alarmPin3ActiveHigh = true;   // true for active high, false for active low
 
-// Input pins for status monitoring
+// Hardware pin assignments used to read power and alarm states.
 const int powerPin1 = 32;  // GPIO pin for power input of unit 1
 const int alarmPin1 = 33;  // GPIO pin for alarm input of unit 1
 const int powerPin2 = 25;  // GPIO pin for power input of unit 2
 const int alarmPin2 = 26;  // GPIO pin for alarm input of unit 2
-const int powerPin3 = 34;  // GPIO 34 for the third unit power pin
-const int alarmPin3 = 35;  // GPIO 35 for the third unit alarm pin
+const int powerPin3 = 34;  // GPIO for the third unit power pin
+const int alarmPin3 = 35;  // GPIO for the third unit alarm pin
 
-// Device states
+// Current in-memory device states used to detect changes.
 bool powerState1 = LOW;
 bool alarmState1 = LOW;
 bool powerState2 = LOW;
@@ -56,11 +82,16 @@ bool alarmState2 = LOW;
 bool powerState3 = LOW;
 bool alarmState3 = LOW;
 
-// Send interval in milliseconds (default to 1 minute)
+// Interval for periodic status updates. Even if no changes occur,
+// a status message will be sent every `sendInterval` milliseconds.
 unsigned long sendInterval = 60000; // 1 minute
 unsigned long lastSendTime = 0;
 
-// Wi-Fi reconnection
+// ----------------------------------------------------------------
+// Helper: ensure the ESP32 stays connected to Wi-Fi.
+// This is called before every HTTP request and can also be triggered
+// elsewhere whenever network connectivity is required.
+// ----------------------------------------------------------------
 void reconnectWiFi() {
   if (WiFi.status() != WL_CONNECTED) {
     Serial.println("Reconnecting to WiFi...");
@@ -104,6 +135,7 @@ void setup() {
 }
 
 void loop() {
+  // Read the current logic level of each input. Disabled units return LOW.
   bool newPowerState1 = digitalRead(powerPin1);
   bool newAlarmState1 = digitalRead(alarmPin1);
   bool newPowerState2 = enableSecondUnit ? digitalRead(powerPin2) : LOW;
@@ -111,7 +143,8 @@ void loop() {
   bool newPowerState3 = enableThirdUnit ? digitalRead(powerPin3) : LOW;
   bool newAlarmState3 = enableThirdUnit ? digitalRead(alarmPin3) : LOW;
 
-  // Adjust state readings based on active high or active low configuration
+  // Normalize readings based on active-high/active-low configuration so
+  // that a value of `true` always means the signal is asserted.
   newPowerState1 = powerPin1ActiveHigh ? newPowerState1 : !newPowerState1;
   newAlarmState1 = alarmPin1ActiveHigh ? newAlarmState1 : !newAlarmState1;
   if (enableSecondUnit) {
@@ -123,7 +156,8 @@ void loop() {
     newAlarmState3 = alarmPin3ActiveHigh ? newAlarmState3 : !newAlarmState3;
   }
 
-  // Check if there is a state change for unit 1
+  // If any monitored value changes, send an immediate status update for
+  // that unit. This keeps the server in sync with real-time events.
   if (newPowerState1 != powerState1 || newAlarmState1 != alarmState1) {
     powerState1 = newPowerState1;
     alarmState1 = newAlarmState1;
@@ -144,7 +178,8 @@ void loop() {
     sendStatus(deviceID3, type3, powerState3, alarmState3);
   }
 
-  // Check if it's time to send the current status based on the send interval
+  // Periodic status updates even when there is no change.
+  // Useful for verifying that the sensor is still alive.
   if (millis() - lastSendTime >= sendInterval) {
     sendStatus(deviceID1, type1, powerState1, alarmState1);
     if (enableSecondUnit) {
@@ -160,13 +195,15 @@ void loop() {
 }
 
 void sendStatus(const char* deviceID, const char* type, bool powerState, bool alarmState) {
+  // Ensure we have a valid network connection before attempting to send data.
   reconnectWiFi();
   if (WiFi.status() == WL_CONNECTED) {
     HTTPClient http;
-    http.setTimeout(5000);  // Set timeout to 5000 ms
+    http.setTimeout(5000);  // Give the request a 5 second timeout
     http.begin(apiURL);
     http.addHeader("Content-Type", "application/json");
 
+    // Build the JSON payload manually to avoid large memory allocations.
     String payload = "{";
     payload += "\"api_key\":\"" + String(apiKey) + "\",";
     payload += "\"deviceID\":\"" + String(deviceID) + "\",";
@@ -175,12 +212,12 @@ void sendStatus(const char* deviceID, const char* type, bool powerState, bool al
     payload += "\"alarm\":" + String(alarmState ? "true" : "false");
     payload += "}";
 
-    // Print the exact payload
+    // Debug log the payload for troubleshooting.
     Serial.println("Sending payload: " + payload);
 
     int httpResponseCode;
     int retryCount = 0;
-    const int maxRetries = 3;
+    const int maxRetries = 3;  // Number of times to retry on failure
     bool success = false;
 
     do {
@@ -195,7 +232,7 @@ void sendStatus(const char* deviceID, const char* type, bool powerState, bool al
           break;  // Exit the loop if the POST request is successful and response is as expected
         }
       } else {
-               Serial.print("Error on sending POST: ");
+        Serial.print("Error on sending POST: ");
         Serial.println(httpResponseCode);
         if (httpResponseCode == HTTPC_ERROR_CONNECTION_REFUSED) {
           Serial.println("Connection refused by server");
@@ -220,7 +257,7 @@ void sendStatus(const char* deviceID, const char* type, bool powerState, bool al
 
     http.end();
 
-    // Log available heap memory
+    // Log available heap memory to help diagnose memory leaks over time.
     Serial.print("Free heap: ");
     Serial.println(ESP.getFreeHeap());
 

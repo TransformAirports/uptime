@@ -1,11 +1,20 @@
-// script.js
+// -----------------------------------------------------------------------------
+// Front-end logic for the public uptime dashboard.
+// Connects to Firebase, retrieves the list of devices, and renders their
+// current power and alarm status. Timers are updated once per second to show
+// how long each device has been online or offline.
+// -----------------------------------------------------------------------------
 
 // Global variables
 let deviceIntervals = {}; // Interval timers for each device (for updating timers)
-let devicesRef; // Reference to the devices in Firebase
-let devicesListener; // Listener for the devices reference
+let devicesRef; // Reference to the devices node in Firebase
+let devicesListener; // Listener that reacts to changes under /devices
 
-// Function to load Firebase config from localFirebase.json
+// -----------------------------------------------------------------------------
+// Load Firebase configuration from the local JSON file.
+// This allows the front-end to connect to a different project when running
+// locally without changing the source code.
+// -----------------------------------------------------------------------------
 function loadFirebaseConfig() {
   return fetch('localFirebase.json')
     .then((response) => response.json())
@@ -23,7 +32,10 @@ function loadFirebaseConfig() {
 
 // No campus selection; devices are loaded directly from the root
 
-// Load and display devices
+// -----------------------------------------------------------------------------
+// Fetch the device list from Firebase and render the dashboard cards.
+// The listener keeps the UI in sync with real-time database updates.
+// -----------------------------------------------------------------------------
 const loadDevices = () => {
   const db = firebase.database();
 
@@ -37,7 +49,7 @@ const loadDevices = () => {
   devicesListener = devicesRef.on(
     'value',
     (snapshot) => {
-      const devices = snapshot.val();
+      const devices = snapshot.val(); // Object keyed by device type
       const devicesContainer = document.getElementById('deviceContainer');
       devicesContainer.innerHTML = ''; // Clear existing devices
 
@@ -70,7 +82,9 @@ const loadDevices = () => {
       // Display devices by type using simple sections
       for (const type in groupedDevices) {
         if (groupedDevices[type].length > 0) {
-          // Sort devices so that online devices come first
+          // Sort devices so that online devices come first. The helper
+          // `getStatusValue` converts each device into a sortable value:
+          // 0 = online, 1 = offline, 2 = unmonitored.
           groupedDevices[type].sort((a, b) => {
             const getStatusValue = (device) => {
               if (!device.monitored) return 2; // Unmonitored devices last
@@ -172,6 +186,7 @@ const loadDevices = () => {
                 clearInterval(deviceIntervals[deviceID]);
               }
 
+              // Update the uptime timer and UI every second for this device.
               deviceIntervals[deviceID] = setInterval(() => {
                 const now = Math.floor(Date.now() / 1000);
                 const uptime = now - lastStatusChangeTimestamp;
@@ -228,7 +243,9 @@ const loadDevices = () => {
   );
 };
 
-// Function to show alerts styled with Tailwind
+// -----------------------------------------------------------------------------
+// Display a temporary alert message using TailwindCSS styles.
+// -----------------------------------------------------------------------------
 function showAlert(message, type = 'info') {
   const alertContainer = document.getElementById('alert-container');
   const alertDiv = document.createElement('div');
@@ -255,7 +272,7 @@ function showAlert(message, type = 'info') {
 
 // Ensure the DOM is fully loaded before executing any scripts
 document.addEventListener('DOMContentLoaded', function () {
-  // Ensure the Firebase config is loaded and initialized first
+  // Load the Firebase configuration first and then render devices.
   loadFirebaseConfig()
     .then(() => {
       console.log('Firebase config loaded and initialized.');
