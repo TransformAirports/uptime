@@ -30,22 +30,76 @@ This repository contains the source code and documentation for the Uptime Monito
 
 ## Theory of Operation: EEMW Monitors (Hardware)
 
-### Purpose and Goals
+### Overview
 
-The EEMW sensors serve to:
+The Uptime EEMW (Elevator, Escalator, and Moving Walkway) monitoring system is an open-source, lightweight solution designed specifically to fulfill the minimal yet operationally critical requirements of airports that outsource EEMW maintenance. Its primary purpose is to detect and communicate outages or service disruptions immediately to expedite the dispatching of maintenance contractors.
 
-- Provide accurate real-time monitoring of EEMW equipment.
-- Assist in the transition from the legacy building management system, ensuring continued monitoring capabilities.
-- Enhance response times for contractors by enabling reactive fault detection and minimizing downtime.
+### System Components
 
-### Separation from Legacy Energy Management Control System (EMCS)
+**Monitoring Device:**
 
-The existing EEMW monitoring system captures two critical signals (power and alarm status) from each EEMW set and relays this information to a central server via the legacy EMCS. The EEMW monitoring solution replicates this functionality by capturing the same binary (true/false) power and alarm signals but establishes a modern data path to transmit this status information to an Internet database. This ensures that monitoring capabilities remain uninterrupted during and after the transition to the upgraded EMCS. The existing EEMW is not part of the new EMCS and will be shut down when the new EMCS is fully deployed.
+- Compact IoT hardware equipped with Wi-Fi connectivity.
+- Monitors two critical relays per conveyance unit:
+  - Operational Status Relay (active/inactive)
+  - Fault Indicator Relay (fault/no fault)
 
-### Data Transmission and Communication Path
+**Cloud Backend:**
 
-- **Legacy Data Path**: Previously, the system relied on hardwired connections to transmit data through the building management system.
-- **New Data Path**: The EEMW monitor processes incoming EEMW signals and transmits equipment status data securely over the public Wi-Fi network using HTTPS, ensuring encrypted communication with the cloud API.
+- Receives real-time status updates from devices.
+- Processes relay signals into actionable notifications.
+
+**Notification Interface:**
+
+- Issues immediate alerts via email to designated maintenance staff or contractors.
+- Web-based dashboard for monitoring current status.
+
+### Operation Flow
+
+**Relay Monitoring:**
+
+- Each conveyance unit has dedicated relay outputs for operational and fault statuses.
+- IoT modules continually monitor these relay states.
+
+**Event Detection & Reporting:**
+
+- Upon detecting a relay state change (indicating a stoppage or fault), the device immediately connects via Wi-Fi to report the event to the cloud backend.
+
+**Backend Processing:**
+
+- The cloud platform interprets the incoming signals.
+
+**Immediate Notification:**
+
+- Critical faults trigger instant notifications to maintenance contractors, airport operations, or designated response teams.
+
+**Status Resolution:**
+
+- Once the issue is resolved, the relay status returns to normal, automatically updating the system and closing the notification loop.
+
+### Connectivity and Installation Simplicity
+
+**Wi-Fi Connectivity:**
+
+- Eliminates the high cost and complexity of extensive cabling.
+- Ensures quick installation with minimal operational disruption.
+
+**Universal Compatibility:**
+
+- Relay-based monitoring enables compatibility with varied EEMW systems regardless of brand or age.
+
+### Benefits of the System
+
+- **Cost Efficiency:** Avoids the extensive costs associated with full-featured commercial monitoring systems.
+- **Rapid Response:** Immediate notification mechanism ensures minimal downtime.
+- **Scalability and Adaptability:** Easily expandable to include additional conveyance devices or sensors.
+- **Transparency and Accountability:** Open-source model promotes collaborative improvement and transparent auditing.
+
+### Security and Reliability
+
+- Data transmissions use secure cloud communication protocols (TLS) and modern cloud-application standards.
+- Although data transmission is secure, the conveyed information itself is effectively open-source and is read-only, allowing transparent monitoring without compromising operational security.
+
+By leveraging a straightforward, relay-based detection method and efficient cloud communication, this EEMW monitoring system provides a solution uniquely scoped to the operational realities of airports.
 
 ## Hardware Details and Electronics Theory of Operation
 
