@@ -69,7 +69,6 @@ const updateUptime = functions.https.onRequest(async (req, res) => {
   }
 
   const deviceRef = admin.database().ref(`/devices/${type}/${deviceID}`);
-  const outageLogsRef = admin.database().ref(`/outageLogs/${type}/${deviceID}/outages`);
   const emailLogRef = admin.database().ref(`/emailLogs/${type}/${deviceID}`);
 
   try {
@@ -92,21 +91,9 @@ const updateUptime = functions.https.onRequest(async (req, res) => {
         updates.alarm = alarm;
         updates.lastStatusChangeTimestamp = now;
 
-        // If the device goes offline (power is false or alarm is true), log the outage and prepare to send an email
+        // If the device goes offline (power is false or alarm is true), prepare to send an email
         if (!power || alarm) {
           triggerEmail = true;
-          const newOutageRef = outageLogsRef.push();
-          await newOutageRef.set({
-            start: now,
-            end: null
-          });
-        } else {
-          // If the device comes back online, mark the ongoing outage as ended
-          const ongoingOutageQuery = outageLogsRef.orderByChild('end').equalTo(null);
-          const ongoingOutageSnapshot = await ongoingOutageQuery.once('value');
-          ongoingOutageSnapshot.forEach(outageSnapshot => {
-            outageSnapshot.ref.update({ end: now });
-          });
         }
       } else {
         // Update last_statuscheck_timestamp even if power and alarm haven't changed
@@ -122,14 +109,9 @@ const updateUptime = functions.https.onRequest(async (req, res) => {
         lastStatusChangeTimestamp: now,
       };
 
-      // If the device is offline during its first entry, log the outage and prepare to send an email
+      // If the device is offline during its first entry, prepare to send an email
       if (!power || alarm) {
         triggerEmail = true;
-        const newOutageRef = outageLogsRef.push();
-        await newOutageRef.set({
-          start: now,
-          end: null
-        });
       }
     }
 
@@ -161,80 +143,7 @@ const updateUptime = functions.https.onRequest(async (req, res) => {
   }
 });
 
-// Function to calculate and update uptime for all devices
-const calculateUptime = functions.pubsub.topic("calculate-uptime").onPublish(async (message) => {
-  const now = new Date();
-  const month = now.getMonth() + 1;
-  const year = now.getFullYear();
-  const startOfMonth = new Date(year, month - 1, 1).getTime() / 1000;
-  const currentTime = Math.floor(now.getTime() / 1000);
-  const totalSecondsInMonth = currentTime - startOfMonth;
-  const totalHoursInMonth = totalSecondsInMonth / 3600;
-
-  console.log(`Calculating uptime for month: ${month}, year: ${year}`);
-  console.log(`Start of month: ${startOfMonth}, Current time: ${currentTime}`);
-  console.log(`Total hours in month so far: ${totalHoursInMonth}`);
-
-  const devicesSnapshot = await admin.database().ref('/devices').once('value');
-  const devices = devicesSnapshot.val();
-
-  for (const type in devices) {
-    for (const deviceID in devices[type]) {
-      console.log(`Processing device: ${deviceID}, type: ${type}`);
-
-      const outageLogsRef = admin.database().ref(`/outageLogs/${type}/${deviceID}/outages`);
-      const outageLogsSnapshot = await outageLogsRef.once('value');
-
-        let totalOutageTime = 0;
-
-        outageLogsSnapshot.forEach(outageSnapshot => {
-          const outage = outageSnapshot.val();
-          const outageStart = Math.max(outage.start, startOfMonth);
-          const outageEnd = outage.end === null ? currentTime : Math.min(outage.end, currentTime);
-          console.log(`Evaluating outage: start=${outage.start}, end=${outage.end}, adjustedStart=${outageStart}, adjustedEnd=${outageEnd}`);
-          if (outageEnd >= outageStart) {
-            const outageDuration = outageEnd - outageStart;
-            totalOutageTime += outageDuration;
-            console.log(`Outage duration: ${outageDuration} seconds, Total outage time so far: ${totalOutageTime} seconds`);
-          } else {
-            console.log(`Invalid outage duration for outage start: ${outage.start}, end: ${outage.end}`);
-          }
-        });
-
-        const totalOutageHours = totalOutageTime / 3600;
-        const uptimeHours = totalHoursInMonth - totalOutageHours;
-        const uptimePercentage = (uptimeHours / totalHoursInMonth) * 100;
-
-        console.log(`Total outage hours: ${totalOutageHours}, Uptime hours: ${uptimeHours}, Uptime percentage: ${uptimePercentage}`);
-
-        const updates = {
-          currentMonthUptime: {
-            totalHours: parseFloat(totalHoursInMonth.toFixed(2)),
-            totalOfflineHours: parseFloat(totalOutageHours.toFixed(2)),
-            uptimeHours: parseFloat(uptimeHours.toFixed(2)),
-            uptimePercentage: parseFloat(uptimePercentage.toFixed(2))
-          }
-        };
-
-        const deviceRef = admin.database().ref(`/devices/${type}/${deviceID}`);
-        await deviceRef.update(updates);
-
-        const uptimeRef = admin.database().ref(`/uptimeLogs/${type}/${deviceID}/${year}-${month}`);
-        await uptimeRef.set({
-          totalHours: parseFloat(totalHoursInMonth.toFixed(2)),
-          totalOfflineHours: parseFloat(totalOutageHours.toFixed(2)),
-          uptimeHours: parseFloat(uptimeHours.toFixed(2)),
-          uptimePercentage: parseFloat(uptimePercentage.toFixed(2)),
-          calculatedAt: currentTime
-        });
-      }
-    }
-
-  return null;
-});
-
 // Export the functions
 module.exports = {
-  updateUptime,
-  calculateUptime
+  updateUptime
 };
