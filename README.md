@@ -1,4 +1,4 @@
-# Uptime EEMW Monitoring System
+# Uptime EEMW Monitoring System for Airports
 
 This repository contains the source code and documentation for the **_Uptime_ Elevator, Escalator, and Moving Walkway (EEMW) Monitoring System**, an open-source tool designed to help airport operators monitor the real-time operational status of critical conveyance devices. By providing instant notifications during downtime, the system enables airports to swiftly dispatch maintenance contractors, ensuring safe and efficient passenger flows at a fraction of the cost of traditional monitoring solutions.
 
@@ -76,7 +76,7 @@ By combining a straightforward relay‑based detection method with efficient clo
 
 # Technical Background
 
-XXX
+Each monitoring unit is built around an ESP32 microcontroller that watches the elevator/escalator’s relay outputs for power status and fault conditions. When a state change is detected (for example, an escalator losing power or triggering an alarm), the ESP32 connects via Wi‑Fi and sends an instant update to the cloud backend. The cloud service interprets these signals and updates a centralized database of device statuses, while simultaneously handling notifications – for critical outages, an alert email is generated immediately to inform maintenance staff. This architecture ensures airports receive immediate downtime alerts without the need for complex on-premise systems. By relying on standard relay contacts and Wi‑Fi networking, the solution remains hardware-agnostic (compatible with any EEMW make or model) and simple to deploy – there’s no extensive cabling or proprietary integration required.
 
 ## Hardware Information
 
@@ -114,7 +114,7 @@ The sensor enclosures are designed to protect hardware components from environme
 
 ## Software Information
 
-XXX
+The Uptime dashboard is a lightweight web application powered by modern, open-source tools. It is built with standard HTML5, CSS, and JavaScript, using Tailwind CSS for a responsive and clean user interface. The dashboard does not require a traditional server – instead, it runs as a static site served via Firebase Hosting. Live data updates are enabled through the Firebase Realtime Database: the browser connects to this cloud database using Firebase’s JavaScript SDK, allowing device status changes to appear on the dashboard instantly as they occur. All communication with the backend is secured over TLS.
 
 Airports can deploy the dashboard in two ways:
 
@@ -123,7 +123,7 @@ Airports can deploy the dashboard in two ways:
 
 ## API Information
 
-XXX
+The Uptime API is implemented as a serverless cloud function using Google Firebase Functions. It runs in a Node.js environment, which executes backend logic in response to HTTP requests from the field devices. This function is the heart of the system’s cloud backend – it receives incoming status data (HTTP POSTs from the sensors), processes the JSON payload, and updates the central Firebase Realtime Database with the new device state. The API layer utilizes the Firebase Admin SDK to interface with both the Realtime Database (for current device status and logs) and Firestore (which stores the list of alert email recipients for each airport or API key). Crucially, the cloud function also integrates with the Postmark email service to send out notifications – whenever a device goes offline and meets the notification criteria, the function invokes Postmark’s Node.js client to email all configured recipients about the outage. Environment secrets (such as the API authorization key and Postmark API token) are managed via Firebase’s built-in secret storage, and the function checks the api_key on each request to authenticate devices.
 
 Airports can access the API in two ways:
 
@@ -223,6 +223,8 @@ curl --location 'https://us-central1-uptime-eb91e.cloudfunctions.net/uptime' --h
 
 ## Setting up Local Software Environment
 
+Fire up Terminal on any Apple macOS machine and paste the commands below—within an hour you’ll have Node, Firebase, and the entire Uptime codebase cloned, configured, and ready to deploy as your own white-label EEMW monitoring system. 
+
 ```bash
 # 1. Install Xcode Command-Line Tools
 xcode-select --install
@@ -279,7 +281,42 @@ firebase open hosting:site
 
 ## Installing Hardware
 
-XXXXX
+Installing the **Uptime** hardware is a five-step process. Steps&nbsp;2‑5 match the workflow you drafted; Step&nbsp;1 adds the firmware‑flashing details you requested.
+
+1. **Flash the ESP32 firmware via the Arduino IDE**  
+   1. Plug the sensor’s ESP32 board into your computer with a USB‑C cable.  
+   2. In **Arduino IDE → Preferences → Additional Boards Manager URLs**, add  
+      `https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json`  
+      (if you haven’t already), then open **Tools → Board → Boards Manager** and install **esp32**.  
+   3. Select **Tools → Board → SparkFun ESP32 Thing Plus**.  
+   4. Open `/hardware/Sensor Code/Uptime/Uptime.ino` and edit the following constants:  
+
+      ```cpp
+      const char* DEVICE_NAME = "EEMW-SENSOR-01";  // any unique name
+      const char* DEVICE_ID   = "01-A-N";          // any unique identifier
+      const char* WIFI_SSID   = "your-ssid";
+      const char* WIFI_PASS   = "your-password";
+      ```  
+
+   5. Choose the correct **Port/COM** entry under **Tools → Port**.  
+   6. Click **Sketch → Upload** (or press ⌘/Ctrl + U). When upload completes, the serial monitor should show the device booting and attempting a Wi‑Fi connection.
+
+2. **Mount the Sensor Unit**  
+   Secure the 3D‑printed enclosure (tamper‑resistant screws included) inside the control cabinet or nearby electrical room, clear of moving parts and moisture.
+
+3. **Wiring Connections**  
+   * Tie the sensor’s opto‑isolated inputs to the elevator/escalator relay contacts: one channel for **run/stop**, another for **fault/alarm** (supports up to three EEMW units).  
+   * Follow the wiring diagram in `/hardware/Circuit Board Design`.  
+   * Land wires on the same screw terminals (or adjacent pass‑through terminals) and tug‑test for security.
+
+4. **Power Supply**  
+   Provide 5 – 35 V DC (or AC) from the equipment panel. The onboard regulator feeds the ESP32 at 3.3 V. Verify the **PWR** and **STATUS** LEDs illuminate and the **WIFI** LED blinks as it negotiates a network connection.
+
+5. **Testing and Verification**  
+   * Open the Uptime dashboard and confirm the device appears **Online**.  
+   * Trip the monitored relay (e.g., simulate a fault) and watch the status flip to **Offline** while an alert email arrives.  
+   * Restore normal operation; the dashboard should return to **Online**. This end‑to‑end test confirms wiring, firmware, cloud function, and notifications are working.
+
 
 ## Contributing
 
