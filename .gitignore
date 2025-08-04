@@ -163,3 +163,4 @@ functions/package-lock.json
 *.cache
 .DS_Store
 postmarkConfig.json
+public/.DS_Store
