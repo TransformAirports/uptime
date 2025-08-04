@@ -118,7 +118,9 @@ const loadDevices = () => {
           groupedDevices[type].forEach((device) => {
             const deviceID = device.deviceID;
             const deviceName = device.device_name || deviceID;
-            const isMonitored = device.monitored;
+            // Treat devices as monitored by default if the field is undefined.
+            const isMonitored =
+              device.monitored !== undefined ? device.monitored : true;
             const deviceStatus =
               isMonitored && device.power && !device.alarm
                 ? 'online'
@@ -165,10 +167,10 @@ const loadDevices = () => {
                   }</p>
                   <p class="card-text">
                     <strong>Power:</strong> <span class="power-indicator" style="color: ${
-                      isMonitored ? (device.power ? 'green' : 'red') : 'grey'
+                      isMonitored ? getPowerColor(device.power) : 'grey'
                     };"><i class="fas fa-circle"></i></span><br>
                     <strong>Alarm:</strong> <span class="alarm-indicator" style="color: ${
-                      isMonitored ? (device.alarm ? 'red' : 'green') : 'grey'
+                      isMonitored ? getAlarmColor(device.alarm) : 'grey'
                     };"><i class="fas fa-circle"></i></span><br>
                     <strong>${timeLabel}:</strong> <span id="timer-${deviceID}">${
               isMonitored ? '' : '-'
@@ -209,8 +211,8 @@ const loadDevices = () => {
                 const alarmIndicator =
                   deviceDiv.querySelector('.alarm-indicator');
 
-                powerIndicator.style.color = device.power ? 'green' : 'red';
-                alarmIndicator.style.color = device.alarm ? 'red' : 'green';
+                powerIndicator.style.color = getPowerColor(device.power);
+                alarmIndicator.style.color = getAlarmColor(device.alarm);
 
                 // Update last sensor reading
                 const lastReadingElement = deviceDiv.querySelector(
