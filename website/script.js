@@ -99,7 +99,8 @@ const loadDevices = () => {
 
           // Grid container for cards
           const gridDiv = document.createElement('div');
-          gridDiv.className = 'grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6';
+          gridDiv.className =
+            'grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3';
           section.appendChild(gridDiv);
 
           devicesContainer.appendChild(section);
