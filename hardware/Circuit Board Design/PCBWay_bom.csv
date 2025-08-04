@@ -1,0 +1,22 @@
+﻿Designator,Quantity,Value,Footprint,Package,MPN,DNP,Mount_Type,Description,Sim.Library,Sim.Name,Sim.Pins,MF,MAXIMUM_PACKAGE_HEIGHT,Price,Check_prices,STANDARD,PARTREV,SnapEDA_Link,MP,Description_1,Availability,MANUFACTURER
+C1,1,470uF,CP_Radial_D10.0mm_P5.00mm,,,,tht,Polarized capacitor,,,,,,,,,,,,,,
+C2,1,470p,CP_Radial_Tantal_D5.5mm_P5.00mm,,,,tht,,,,,,,,,,,,,,,
+C3,1,100u,CP_Radial_D8.0mm_P3.80mm,,,,tht,,,,,,,,,,,,,,,
+"D1, D2, D3, D4, D7, D8",6,LED,LED_D3.0mm,,,,tht,Light emitting diode,,,,,,,,,,,,,,
+D5,1,B40C800DM,Diode_Bridge_DIP-4_W7.62mm_P5.08mm,,,,tht,"Glass Passivated Single-Phase Bridge Rectifier, 40V Vrms, 0.8A If, DIP-4",,,,,,,,,,,,,,
+D6,1,1N5819,D_DO-41_SOD81_P10.16mm_Horizontal,,,,tht,,mc34063_ng.lib,DN5819,2=1 1=2,,,,,,,,,,,
+F1,1,Fuse,R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal,,,,tht,Fuse,,,,,,,,,,,,,,
+J7,1,Screw_Terminal_01x12,"TerminalBlock_Phoenix_MKDS-1,5-12_1x12_P5.00mm_Horizontal",,,,tht,"Generic screw terminal, single row, 01x12, script generated (kicad-library-utils/schlib/autogen/connector/)",,,,,,,,,,,,,,
+J8,1,Screw_Terminal_01x02,TerminalBlock_bornier-2_P5.08mm,,,,tht,"Generic screw terminal, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)",,,,,,,,,,,,,,
+"JP1, JP2, JP3, JP4, JP5",5,SolderJumper_2_Open,SolderJumper-2_P1.3mm_Open_Pad1.0x1.5mm,,,,tht,"Solder Jumper, 2-pole, open",,,,,,,,,,,,,,
+L1,1,220u,R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal,,,,tht,,,,,,,,,,,,,,,
+"R1, R13, R14, R15, R2, R4, R6, R7, R8",9,10k,R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal,,,,tht,Resistor,,,,,,,,,,,,,,
+R10,1,3k,R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal,,,,tht,,,,,,,,,,,,,,,
+R11,1,1k,R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal,,,,tht,,,,,,,,,,,,,,,
+"R12, R3, R5",3,10K,R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal,,,,tht,Resistor,,,,,,,,,,,,,,
+R9,1,0.5,R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal,,,,tht,,,,,,,,,,,,,,,
+U1,1,NODEMCU-32S,MODULE_NODEMCU-32S,Package,,,tht,,,,,AI-Thinker,3.00mm,None,https://www.snapeda.com/parts/NODEMCU-32S/AI-Thinker/view-part/?ref=eda,Manufacturer Recommendations,V1,https://www.snapeda.com/parts/NODEMCU-32S/AI-Thinker/view-part/?ref=snap,NODEMCU-32S,"
+WIFI MODULE V1
+",Not in stock,AI-Thinker
+"U2, U3, U4, U5, U6, U8",6,EL817,DIP-4_W7.62mm,,,,tht,"DC Optocoupler, Vce 35V, DIP-4",,,,,,,,,,,,,,
+U7,1,MC34063AD,DIP-8_W7.62mm,,,,tht,,mc34063_ng.lib,mc34063a,1=1 2=2 3=3 4=4 5=5 6=6 7=7 8=8,,,,,,,,,,,

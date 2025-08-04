@@ -1,0 +1,27 @@
+{
+  "name": "uptime",
+  "version": "1.0.0",
+  "description": "This repository contains the source code and documentation for the Uptime Monitoring System to be deployed at Ronald Reagan Washington National Airport and Washington Dulles International Airport. The system monitors the uptime of elevators, escalators, and moving walkways (EEMWs) and sends notifications when any device experiences downtime. This helps ensure operational efficiency and safety within airport facilities, particularly in high-traffic areas.",
+  "main": "index.js",
+  "scripts": {
+    "deploy": "gulp deploy",
+    "local": "gulp local",
+    "test": "node --test"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "browser-sync": "^2.29.3",
+    "del": "^6.1.1",
+    "gulp": "^4.0.2",
+    "gulp-clean-css": "^4.3.0",
+    "gulp-htmlmin": "^5.0.1",
+    "gulp-imagemin": "^7.1.0",
+    "gulp-terser": "^2.1.0"
+  },
+  "dependencies": {
+    "firebase-admin": "^13.4.0"
+  }
+}

@@ -1,0 +1,9 @@
+/* Custom styles for Tailwind-powered UI */
+body {
+  font-family: Arial, sans-serif;
+}
+
+/* Highlight border when sensor is offline */
+.sensor-offline-box {
+  border: 2px solid #facc15; /* Tailwind yellow-400 */
+}

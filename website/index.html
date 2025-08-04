@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EEMW Uptime Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="min-h-screen pb-16 bg-gray-50">
+    <div class="max-w-7xl mx-auto p-4">
+      <div id="alert-container" class="fixed top-16 right-5 z-50 max-w-sm"></div>
+
+      <div id="deviceContainer"></div>
+    </div>
+
+    <!-- Fixed Footer -->
+    <footer class="fixed bottom-0 left-0 w-full bg-gray-900 text-white">
+      <div class="max-w-7xl mx-auto flex justify-between items-center px-4 py-2">
+        <a href="#" class="font-bold">Uptime Monitor</a>
+        <span class="text-sm">What happens when airport R&D goes open source? This.</span>
+      </div>
+    </footer>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="utils.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
