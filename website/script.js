@@ -23,17 +23,6 @@ function loadFirebaseConfig() {
 
 // No campus selection; devices are loaded directly from the root
 
-// Attach click listeners to the device cards for showing outage logs
-const attachCardEventListeners = () => {
-  document.querySelectorAll('.device-card').forEach((card) => {
-    card.addEventListener('click', (event) => {
-      const deviceID = event.currentTarget.getAttribute('data-id');
-      const type = event.currentTarget.getAttribute('data-type');
-      showOutageLogs(deviceID, type);
-    });
-  });
-};
-
 // Load and display devices
 const loadDevices = () => {
   const db = firebase.database();
@@ -241,8 +230,6 @@ const loadDevices = () => {
         }
       }
 
-      // Attach event listeners to the device cards for showing outage logs
-      attachCardEventListeners();
     },
     (error) => {
       console.error('Error loading devices:', error);
@@ -253,60 +240,6 @@ const loadDevices = () => {
   );
 };
 
-// Function to show outage logs in a modal
-const showOutageLogs = (deviceID, type) => {
-  const outageLogList = document.getElementById('outageLogList');
-  const modalDeviceID = document.getElementById('modalDeviceID');
-
-  // Clear previous logs
-  outageLogList.innerHTML = '';
-  modalDeviceID.textContent = deviceID;
-
-  // Reference to the outage logs in Firebase
-  const outageLogsRef = firebase
-    .database()
-    .ref(`/outageLogs/${type}/${deviceID}/outages`)
-    .limitToLast(10);
-  outageLogsRef.once('value', (snapshot) => {
-    const outages = snapshot.val();
-
-    if (outages) {
-      // Iterate over each outage and display the details
-      Object.entries(outages).forEach(([key, outage]) => {
-        const start = new Date(outage.start * 1000).toLocaleString();
-        const end = outage.end
-          ? new Date(outage.end * 1000).toLocaleString()
-          : 'Ongoing';
-        const duration = outage.end
-          ? outage.end - outage.start
-          : Math.floor(Date.now() / 1000) - outage.start;
-        const hours = Math.floor(duration / 3600);
-        const minutes = Math.floor((duration % 3600) / 60);
-        const seconds = duration % 60;
-
-        const listItem = document.createElement('li');
-        listItem.className = 'list-group-item';
-        listItem.innerHTML = `<strong>Start:</strong> ${start} <br>
-                                <strong>End:</strong> ${end} <br>
-                                <strong>Duration:</strong> ${hours}h ${minutes}m ${seconds}s`;
-
-        outageLogList.appendChild(listItem);
-      });
-    } else {
-      // No outages recorded
-      const listItem = document.createElement('li');
-      listItem.className = 'list-group-item';
-      listItem.textContent = 'No recorded outages.';
-      outageLogList.appendChild(listItem);
-    }
-
-    // Show the modal
-    const outageLogModal = new bootstrap.Modal(
-      document.getElementById('outageLogModal')
-    );
-    outageLogModal.show();
-  });
-};
 
 // Function to show Bootstrap alerts
 function showAlert(message, type = 'info') {
