@@ -24,7 +24,7 @@ This repository contains the source code and documentation for the **_Uptime_ El
 ## Repository Structure
 
 - **/API**: Contains the Firebase Functions code that handles API requests, processes sensor data, and sends email notifications via the Postmark App API.
-- **/public**: Contains the deployable code that is hosted on Firebase Hosting.
+- **/dist**: Contains the deployable code that is hosted on Firebase Hosting.
 - **/hardware**: Contains sensor code, wiring diagrams, and design schematics for the sensor cases.
 - **/website**: Contains the frontend code for the dashboard.
 
