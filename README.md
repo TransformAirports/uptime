@@ -1,18 +1,8 @@
-# Uptime Monitoring System
+# Uptime EEMW Monitoring System
 
-This repository contains the source code and documentation for the **Uptime Monitoring System**, an open‑source tool for tracking the operational status of elevators, escalators, and moving walkways (EEMWs) in airport facilities. The system monitors equipment uptime and sends notifications whenever a device experiences downtime, helping airport operators maintain safe, efficient passenger flows.
+This repository contains the source code and documentation for the **_Uptime_ Elevator, Escalator, and Moving Walkway (EEMW) Monitoring System**, an open-source tool designed to help airport operators monitor the real-time operational status of critical conveyance devices. By providing instant notifications during downtime, the system enables airports to swiftly dispatch maintenance contractors, ensuring safe and efficient passenger flows at a fraction of the cost of traditional monitoring solutions.
 
 ![V2 Sensor Image](https://github.com/AirportLabs/uptime/blob/main/photos/sensor_v2.png)
-
-### Principals and Points of Contact
-
-#### Christian Kessler
-**Role**: Airports Transformation and Innovation Division Manager  
-**Responsibilities**: Responsible for backend development and dashboard integration.
-
-#### Patrick Skelton
-**Role**: Innovation Research & Development Program Manager  
-**Responsibilities**: Responsible for hardware design and installation.
 
 ## Repository Structure
 
@@ -27,11 +17,7 @@ This repository contains the source code and documentation for the **Uptime Moni
 - **Automatic Outage Detection**: If a sensor reports power loss or an alarm condition, the device is marked as offline.
 - **Delayed Notification**: To avoid false alarms caused by transient issues, email notifications are delayed by 30 seconds.
 
-## Theory of Operations for Open‑Source EEMW Monitoring System
-
-### Overview
-
-The *Uptime* EEMW (Elevator, Escalator, and Moving Walkway) monitoring system is an open‑source, lightweight solution designed specifically to fulfill the minimal yet operationally critical requirements of airports that outsource EEMW maintenance. Its primary purpose is to detect and communicate outages or service disruptions immediately to expedite the dispatching of maintenance contractors.
+# Concept
 
 ### System Components
 
@@ -67,14 +53,13 @@ The *Uptime* EEMW (Elevator, Escalator, and Moving Walkway) monitoring system is
 - **Cost Efficiency** – Avoids the heavy costs of full‑featured commercial monitoring platforms.  
 - **Rapid Response** – Immediate notifications help minimize downtime.  
 - **Scalability & Adaptability** – Easily expandable to additional devices or sensors.  
-- **Transparency & Accountability** – Open‑source model encourages collaborative improvement and independent auditing.
-
-### Security and Reliability
-
-- All data transmissions use TLS and modern cloud‑application standards.  
-- While communication is secure, the telemetry itself is read‑only and effectively open‑data, enabling transparent monitoring without exposing sensitive information.
+- **Transparency & Accountability** – Open‑source model encourages collaborative improvement.
 
 By combining a straightforward relay‑based detection method with efficient cloud communication, the *Uptime* monitoring system offers a right‑sized solution tailored to the operational realities of airports.
+
+# Technical Background
+
+XXX
 
 ## Hardware Information
 
@@ -112,6 +97,11 @@ The sensor enclosures are designed to protect hardware components from environme
 
 ## Software Information
 
+### Security and Reliability
+
+- All data transmissions use TLS and modern cloud‑application standards.  
+- While communication is secure, the telemetry itself is read‑only and effectively open‑data, enabling transparent monitoring without exposing sensitive information.
+
 ### Dashboard Access
 
 Airports can deploy the dashboard in two ways:
@@ -121,30 +111,14 @@ Airports can deploy the dashboard in two ways:
 
 ## API Information
 
-## API Access
+### API Access
 
-Airports can deploy the dashboard in two ways:
+Airports can access the API in two ways:
 
 1. **Self‑Hosted** – Clone this repository and host the API in your own cloud environment.  
 2. **Managed Service** – Request a unique API key from the maintainers. Using this key, allows you to use the shared API (https://us-central1-uptime-eb91e.cloudfunctions.net/uptime).
 
-## Compliance and Security
-
-XXXX
-
-#### Microcontroller Security: ESP32 Devices
-
-ESP32 devices do not run a full operating system, reducing the attack surface associated with OS vulnerabilities. They communicate solely with the API, limiting exposure to sensitive data.
-
-#### Network Segmentation
-
-Logical network segmentation ensures that the monitoring system operates in isolation from the airport’s non‑public networks, minimising security risks.
-
-#### Physical Segmentation
-
-Sensors are secured in designated electrical and equipment rooms, restricting access to authorised personnel.
-
-## Software‑as‑a‑Service (SaaS)Services
+## Software‑as‑a‑Service (SaaS) Services
 
 This project utilises several Software‑as‑a‑Service (SaaS) products to ensure reliable operation:
 
@@ -172,6 +146,24 @@ This project utilises several Software‑as‑a‑Service (SaaS) products to ens
 
 - **Purpose** – Sends transactional alert emails when a device goes offline.  
 - **Functionality** – Provides reliable email delivery for time‑sensitive notifications.
+
+## Compliance and Security
+
+XXXX
+
+#### Microcontroller Security: ESP32 Devices
+
+ESP32 devices do not run a full operating system, reducing the attack surface associated with OS vulnerabilities. They communicate solely with the API, limiting exposure to sensitive data.
+
+#### Network Segmentation
+
+Logical network segmentation through public Wi-Fi ensures that the monitoring system operates in isolation from the airport’s non‑public networks, minimising security risks.
+
+#### Physical Segmentation
+
+Sensors should be deployed in designated electrical and equipment rooms, restricting access to authorised personnel.
+
+# Technical Instructions
 
 ## API Endpoint
 
@@ -211,7 +203,7 @@ curl --location 'https://us-central1-uptime-eb91e.cloudfunctions.net/uptime' --h
 - **400 Bad Request** – Missing or invalid parameters.  
 - **500 Internal Server Error** – Server‑side processing error.
 
-## CLI Commands
+## Setting up Local Software Environment
 
 ```bash
 # Run dashboard locally
@@ -227,6 +219,10 @@ firebase deploy --only functions
 firebase functions:secrets:set SECRET_API_KEY
 firebase functions:secrets:set SECRET_POSTMARK_API
 ```
+
+## Installing Hardware
+
+XXXXX
 
 ## Contributing
 
