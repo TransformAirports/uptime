@@ -55,11 +55,15 @@ const loadDevices = () => {
 
       // Group devices by type
       for (let type in devices) {
-        type = type.toLowerCase(); // Normalize type to lowercase
-        if (!groupedDevices[type]) continue; // Skip if type is not recognized
+        const normalizedType = normalizeDeviceType(type);
+        if (!groupedDevices[normalizedType]) continue; // Skip if type is not recognized
         for (const deviceID in devices[type]) {
           const device = devices[type][deviceID];
-          groupedDevices[type].push({ type, deviceID, ...device });
+          groupedDevices[normalizedType].push({
+            type: normalizedType,
+            deviceID,
+            ...device,
+          });
         }
       }
 
