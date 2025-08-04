@@ -234,10 +234,11 @@ gulp deploy
 firebase deploy --only functions
 ```
 
-**To set or update your API Key:**
+**To set or update your API Keys:**
 
 ```
 firebase functions:secrets:set SECRET_API_KEY
+firebase functions:secrets:set SECRET_POSTMARK_API
 ```
 
 ## Contributing

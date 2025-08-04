@@ -51,7 +51,7 @@ async function sendOutageEmail(deviceID, type, timestamp, apiKey) {
 
     // Send the email using Postmark SDK
     await postmarkClient.sendEmail({
-      From: 'StratOps Uptime <uptime@transformairports.com>',
+      From: 'Uptime <uptime@transformairports.com>',
       To: toEmails,
       Subject: subject,
       TextBody: body
