@@ -38,7 +38,7 @@ const loadDevices = () => {
     'value',
     (snapshot) => {
       const devices = snapshot.val();
-      const devicesContainer = document.getElementById('deviceAccordion');
+      const devicesContainer = document.getElementById('deviceContainer');
       devicesContainer.innerHTML = ''; // Clear existing devices
 
       const deviceTypes = {
@@ -67,7 +67,7 @@ const loadDevices = () => {
         }
       }
 
-      // Display devices by type using accordion
+      // Display devices by type using simple sections
       for (const type in groupedDevices) {
         if (groupedDevices[type].length > 0) {
           // Sort devices so that online devices come first
@@ -81,14 +81,9 @@ const loadDevices = () => {
             return getStatusValue(a) - getStatusValue(b);
           });
 
-          const accordionItem = document.createElement('div');
-          accordionItem.classList.add('accordion-item');
-          accordionItem.setAttribute('data-type', type);
-
-          const headingId = `heading-${type}`;
-          const collapseId = `collapse-${type}`;
-          const isExpanded = true; // Open by default
-          const showClass = isExpanded ? 'show' : '';
+          const section = document.createElement('section');
+          section.classList.add('mb-8');
+          section.setAttribute('data-type', type);
 
           // Count online devices
           const onlineCount = groupedDevices[type].filter(
@@ -96,23 +91,18 @@ const loadDevices = () => {
           ).length;
           const totalCount = groupedDevices[type].length;
 
-          // Create accordion header and body
-          accordionItem.innerHTML = `
-            <h2 class="accordion-header" id="${headingId}">
-              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#${collapseId}" aria-expanded="${isExpanded}" aria-controls="${collapseId}">
-                ${deviceTypes[type]}<span class="lead"> (${onlineCount} of ${totalCount} online)</span>
-              </button>
-            </h2>
-            <div id="${collapseId}" class="accordion-collapse collapse ${showClass}" aria-labelledby="${headingId}" data-bs-parent="#deviceAccordion">
-              <div class="accordion-body">
-                <div class="row"></div>
-              </div>
-            </div>
-          `;
+          // Section header
+          const header = document.createElement('h2');
+          header.className = 'text-xl font-semibold mb-4';
+          header.innerHTML = `${deviceTypes[type]} <span class="text-sm font-normal">(${onlineCount} of ${totalCount} online)</span>`;
+          section.appendChild(header);
 
-          devicesContainer.appendChild(accordionItem);
+          // Grid container for cards
+          const gridDiv = document.createElement('div');
+          gridDiv.className = 'grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6';
+          section.appendChild(gridDiv);
 
-          const rowDiv = accordionItem.querySelector('.row');
+          devicesContainer.appendChild(section);
 
           // Create a card for each device and display its status
           groupedDevices[type].forEach((device) => {
@@ -140,42 +130,40 @@ const loadDevices = () => {
             let extraInfoHTML = '';
             if (isMonitored) {
               extraInfoHTML = `
-                <p class="card-text extra-info">
-                  <small class="text-muted" id="last-reading-${deviceID}">Last sensor reading: ${new Date(
+                <p class="mt-2 text-xs text-gray-500" id="last-reading-${deviceID}">Last sensor reading: ${new Date(
                 lastStatusCheckTimestamp * 1000
-              ).toLocaleString()}</small>
-                </p>
+              ).toLocaleString()}</p>
               `;
             }
 
             // Prepare location HTML only if a location is provided
             const locationHTML = device.location
-              ? `<p class="card-text small text-muted">${device.location}</p>`
+              ? `<p class="text-sm text-gray-500">${device.location}</p>`
               : '';
 
             deviceDiv.innerHTML = `
-              <div class="card mb-3 ${deviceStatus === 'online' ? 'border-success' : 'border-danger'}">
-                <div class="card-body">
-                  <h4 class="card-title">${deviceName}</h4>
-                  ${locationHTML}
-                  <p class="card-text">
-                    <strong>Power:</strong> <span class="power-indicator" style="color: ${
-                      isMonitored ? getPowerColor(device.power) : 'grey'
-                    };"><i class="fas fa-circle"></i></span><br>
-                    <strong>Alarm:</strong> <span class="alarm-indicator" style="color: ${
-                      isMonitored ? getAlarmColor(device.alarm) : 'grey'
-                    };"><i class="fas fa-circle"></i></span><br>
-                    <strong>${timeLabel}:</strong> <span id="timer-${deviceID}">${
+              <div class="device-card-inner border ${
+                deviceStatus === 'online' ? 'border-green-500' : 'border-red-500'
+              } rounded p-4 bg-white">
+                <h4 class="text-lg font-bold">${deviceName}</h4>
+                ${locationHTML}
+                <p class="text-sm mt-2">
+                  <strong>Power:</strong> <span class="power-indicator" style="color: ${
+                    isMonitored ? getPowerColor(device.power) : 'grey'
+                  };"><i class="fas fa-circle"></i></span><br>
+                  <strong>Alarm:</strong> <span class="alarm-indicator" style="color: ${
+                    isMonitored ? getAlarmColor(device.alarm) : 'grey'
+                  };"><i class="fas fa-circle"></i></span><br>
+                  <strong>${timeLabel}:</strong> <span id="timer-${deviceID}">${
               isMonitored ? '' : '-'
             }</span>
-                  </p>
-                  ${extraInfoHTML}
-                </div>
+                </p>
+                ${extraInfoHTML}
               </div>
             `;
 
-            // Append the device card to the row
-            rowDiv.appendChild(deviceDiv);
+            // Append the device card to the grid
+            gridDiv.appendChild(deviceDiv);
 
             // Set up interval to update timer and status
             if (isMonitored) {
@@ -218,7 +206,7 @@ const loadDevices = () => {
                 }
 
                 // Highlight card if sensor is offline (no data for over 90 seconds)
-                const cardElement = deviceDiv.querySelector('.card');
+                const cardElement = deviceDiv.querySelector('.device-card-inner');
                 if (now - lastStatusCheckTimestamp > 90) {
                   cardElement.classList.add('sensor-offline-box');
                 } else {
@@ -229,7 +217,6 @@ const loadDevices = () => {
           });
         }
       }
-
     },
     (error) => {
       console.error('Error loading devices:', error);
@@ -240,24 +227,28 @@ const loadDevices = () => {
   );
 };
 
-
-// Function to show Bootstrap alerts
+// Function to show alerts styled with Tailwind
 function showAlert(message, type = 'info') {
   const alertContainer = document.getElementById('alert-container');
   const alertDiv = document.createElement('div');
-  alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+
+  const typeClasses = {
+    info: 'bg-blue-100 border-blue-400 text-blue-700',
+    success: 'bg-green-100 border-green-400 text-green-700',
+    warning: 'bg-yellow-100 border-yellow-400 text-yellow-700',
+    danger: 'bg-red-100 border-red-400 text-red-700',
+  };
+
+  alertDiv.className = `mb-2 border-l-4 p-4 rounded ${
+    typeClasses[type] || typeClasses.info
+  }`;
   alertDiv.role = 'alert';
-  alertDiv.innerHTML = `
-    ${message}
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-  `;
+  alertDiv.textContent = message;
   alertContainer.appendChild(alertDiv);
 
   // Automatically remove the alert after 5 seconds
   setTimeout(() => {
-    alertDiv.classList.remove('show');
-    alertDiv.classList.add('hide');
-    alertDiv.addEventListener('transitionend', () => alertDiv.remove());
+    alertDiv.remove();
   }, 5000);
 }
 
@@ -274,4 +265,3 @@ document.addEventListener('DOMContentLoaded', function () {
       console.error('Failed to initialize Firebase:', err);
     });
 });
-
