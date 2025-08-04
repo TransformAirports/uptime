@@ -16,14 +16,14 @@ This repository contains the source code and documentation for the Uptime Monito
 
 ## Repository Structure
 
-- **/functions**: Contains the Firebase Functions code that handles API requests, processes sensor data, and sends email notifications via the Postmark App API.
+- **/API**: Contains the Firebase Functions code that handles API requests, processes sensor data, and sends email notifications via the Postmark App API.
 - **/public**: Contains the frontend code for the dashboard.
 - **/hardware**: Contains sensor code, wiring diagrams, and design schematics for the sensor cases.
-- **/dev**: Contains the deployable code that is hosted on Firebase Hosting.
+- **/website**: Contains the deployable code that is hosted on Firebase Hosting.
 
 ## Features
 
-- **Real-time Uptime Monitoring**: Sensors deployed on EEMWs send data every minute or when an incident is detected, which is processed by the Firebase Function.
+- **Real-time Uptime Monitoring**: Sensors deployed on EEMWs send data every minute or when an incident is detected, which is processed by the API.
 - **Automatic Outage Detection**: If a sensor reports power loss or an alarm condition, the device is marked as offline.
 - **Delayed Notification**: To avoid false alarms due to transient issues, email notifications are delayed by 30 seconds.
 - **Uptime Calculation**: A scheduled job calculates uptime metrics monthly, providing insights into EEMW performance.

@@ -159,7 +159,7 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*  
-functions/package-lock.json
+API/package-lock.json
 *.cache
 .DS_Store
 postmarkConfig.json

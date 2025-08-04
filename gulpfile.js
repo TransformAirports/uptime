@@ -12,40 +12,40 @@ function clean() {
 }
 
 function html() {
-  return src('dev/**/*.html')
+  return src('website/**/*.html')
     .pipe(htmlmin({ collapseWhitespace: true }))
     .pipe(dest('dist'));
 }
 
 function styles() {
-  return src('dev/**/*.css')
+  return src('website/**/*.css')
     .pipe(cleanCSS())
     .pipe(dest('dist'));
 }
 
 function scripts() {
-  return src('dev/**/*.js')
+  return src('website/**/*.js')
     .pipe(terser())
     .pipe(dest('dist'));
 }
 
 function images() {
-  return src('dev/**/*.{png,jpg,jpeg,gif,svg,ico}')
+  return src('website/**/*.{png,jpg,jpeg,gif,svg,ico}')
     .pipe(imagemin())
     .pipe(dest('dist'));
 }
 
 function fonts() {
-  return src('dev/**/*.{eot,svg,ttf,woff,woff2}')
+  return src('website/**/*.{eot,svg,ttf,woff,woff2}')
     .pipe(dest('dist'));
 }
 
 function serve() {
   browserSync.init({
-    server: { baseDir: 'dev' }
+    server: { baseDir: 'website' }
   });
 
-  watch('dev/**/*').on('change', browserSync.reload);
+  watch('website/**/*').on('change', browserSync.reload);
 }
 
 function firebaseDeploy(done) {
