@@ -8,9 +8,6 @@ const char* password = "Mwaa1987!";
 // API endpoint
 const char* apiURL = "https://us-central1-uptime-eb91e.cloudfunctions.net/updateUptime";
 
-// Device configuration
-const char* campus = "DCA";  // Options: "DCA" or "IAD"
-
 // Unit 1 configuration
 const char* deviceID1 = "Sidewalk01";  // Unique ID for each ESP32
 const char* type1 = "sidewalk";  // Options: "elevator", "escalator", "sidewalk"
@@ -169,7 +166,6 @@ void sendStatus(const char* deviceID, const char* type, bool powerState, bool al
 
     String payload = "{";
     payload += "\"deviceID\":\"" + String(deviceID) + "\",";
-    payload += "\"campus\":\"" + String(campus) + "\",";
     payload += "\"type\":\"" + String(type) + "\",";
     payload += "\"power\":" + String(powerState ? "true" : "false") + ",";
     payload += "\"alarm\":" + String(alarmState ? "true" : "false");

@@ -17,18 +17,17 @@ const EMAIL_INTERVAL_SECONDS = 21600;
 /**
  * Sends an email notification using the Postmark Node.js SDK.
  * @param {string} deviceID - The ID of the device that went offline.
- * @param {string} campus - The campus where the device is located (e.g., IAD, DCA).
  * @param {string} type - The type of device (Elevator, Escalator, Moving Walkway).
  * @param {number} timestamp - The timestamp when the device went offline.
  */
-async function sendOutageEmail(deviceID, campus, type, timestamp) {
+async function sendOutageEmail(deviceID, type, timestamp) {
   try {
-    // Retrieve the list of email addresses for the specified campus
-    const emailSnapshot = await admin.database().ref(`/alertEmails/${campus}`).once('value');
+    // Retrieve the list of global alert email addresses
+    const emailSnapshot = await admin.database().ref(`/alertEmails`).once('value');
     const emails = emailSnapshot.val();
-    
+
     if (!emails) {
-      console.log('No emails found for campus:', campus);
+      console.log('No alert emails configured.');
       return;
     }
 
@@ -62,16 +61,16 @@ const updateUptime = functions.https.onRequest(async (req, res) => {
     return res.status(405).send('Method Not Allowed');
   }
 
-  const { deviceID, campus, type, power, alarm } = req.body;
+  const { deviceID, type, power, alarm } = req.body;
 
   // Validate the request body
-  if (!deviceID || !campus || !type || typeof power !== 'boolean' || typeof alarm !== 'boolean') {
+  if (!deviceID || !type || typeof power !== 'boolean' || typeof alarm !== 'boolean') {
     return res.status(400).send('Missing or incorrect required parameters');
   }
 
-  const deviceRef = admin.database().ref(`/devices/${campus}/${type}/${deviceID}`);
-  const outageLogsRef = admin.database().ref(`/outageLogs/${campus}/${type}/${deviceID}/outages`);
-  const emailLogRef = admin.database().ref(`/emailLogs/${campus}/${type}/${deviceID}`);
+  const deviceRef = admin.database().ref(`/devices/${type}/${deviceID}`);
+  const outageLogsRef = admin.database().ref(`/outageLogs/${type}/${deviceID}/outages`);
+  const emailLogRef = admin.database().ref(`/emailLogs/${type}/${deviceID}`);
 
   try {
     // Get the current data of the device from Firebase
@@ -146,7 +145,7 @@ const updateUptime = functions.https.onRequest(async (req, res) => {
       // Only send an email if the last one was sent more than 6 hours ago
       if (!lastEmailTimestamp || (now - lastEmailTimestamp > EMAIL_INTERVAL_SECONDS)) {
         setTimeout(async () => {
-          await sendOutageEmail(deviceID, campus, type, now);
+          await sendOutageEmail(deviceID, type, now);
           // Log the timestamp of the sent email
           await emailLogRef.set(now);
         }, 30000); // 30 seconds delay
@@ -179,13 +178,12 @@ const calculateUptime = functions.pubsub.topic("calculate-uptime").onPublish(asy
   const devicesSnapshot = await admin.database().ref('/devices').once('value');
   const devices = devicesSnapshot.val();
 
-  for (const campus in devices) {
-    for (const type in devices[campus]) {
-      for (const deviceID in devices[campus][type]) {
-        console.log(`Processing device: ${deviceID} in campus: ${campus}, type: ${type}`);
-        
-        const outageLogsRef = admin.database().ref(`/outageLogs/${campus}/${type}/${deviceID}/outages`);
-        const outageLogsSnapshot = await outageLogsRef.once('value');
+  for (const type in devices) {
+    for (const deviceID in devices[type]) {
+      console.log(`Processing device: ${deviceID}, type: ${type}`);
+
+      const outageLogsRef = admin.database().ref(`/outageLogs/${type}/${deviceID}/outages`);
+      const outageLogsSnapshot = await outageLogsRef.once('value');
 
         let totalOutageTime = 0;
 
@@ -218,10 +216,10 @@ const calculateUptime = functions.pubsub.topic("calculate-uptime").onPublish(asy
           }
         };
 
-        const deviceRef = admin.database().ref(`/devices/${campus}/${type}/${deviceID}`);
+        const deviceRef = admin.database().ref(`/devices/${type}/${deviceID}`);
         await deviceRef.update(updates);
 
-        const uptimeRef = admin.database().ref(`/uptimeLogs/${campus}/${type}/${deviceID}/${year}-${month}`);
+        const uptimeRef = admin.database().ref(`/uptimeLogs/${type}/${deviceID}/${year}-${month}`);
         await uptimeRef.set({
           totalHours: parseFloat(totalHoursInMonth.toFixed(2)),
           totalOfflineHours: parseFloat(totalOutageHours.toFixed(2)),
@@ -231,7 +229,6 @@ const calculateUptime = functions.pubsub.topic("calculate-uptime").onPublish(asy
         });
       }
     }
-  }
 
   return null;
 });

@@ -173,7 +173,6 @@ This project utilizes a variety of Software as a Service (SaaS) products to ensu
 |------------|---------|-----------------------------------------------------------------------------|----------|
 | deviceID   | String  | Unique identifier for the device (e.g., "Escalator01").                      | Yes      |
 | type       | String  | Type of the device; must be one of the following: `escalator`, `elevator`, or `movingsidewalk`. | Yes      |
-| campus     | String  | Identifier for the campus; must be either `IAD` or `DCA`.                   | Yes      |
 | power      | Boolean | The current power status of the device; `true` for powered, `false` for offline.  | Yes      |
 | alarm      | Boolean | The current alarm status of the device; `true` for no alarm, `false` for alarm triggered. | Yes      |
 | apikey      | String | API key | Yes      |
@@ -190,7 +189,6 @@ curl --location 'https://us-central1-uptime-eb91e.cloudfunctions.net/updateUptim
 --data '{
   "deviceID": "Escalator01",
   "type": "escalator",
-  "campus": "IAD",
   "power": true,
   "alarm": true,
   "apikey": "XXX"
