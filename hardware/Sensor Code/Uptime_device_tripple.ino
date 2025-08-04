@@ -8,6 +8,9 @@ const char* password = "Mwaa1987!";
 // API endpoint
 const char* apiURL = "https://us-central1-uptime-eb91e.cloudfunctions.net/updateUptime";
 
+// API key for authentication
+const char* apiKey = "YOUR_API_KEY";
+
 // Unit 1 configuration
 const char* deviceID1 = "Sidewalk01";  // Unique ID for each ESP32
 const char* type1 = "sidewalk";  // Options: "elevator", "escalator", "sidewalk"
@@ -165,6 +168,7 @@ void sendStatus(const char* deviceID, const char* type, bool powerState, bool al
     http.addHeader("Content-Type", "application/json");
 
     String payload = "{";
+    payload += "\"api_key\":\"" + String(apiKey) + "\",";
     payload += "\"deviceID\":\"" + String(deviceID) + "\",";
     payload += "\"type\":\"" + String(type) + "\",";
     payload += "\"power\":" + String(powerState ? "true" : "false") + ",";

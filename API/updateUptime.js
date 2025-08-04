@@ -56,17 +56,28 @@ async function sendOutageEmail(deviceID, type, timestamp) {
 }
 
 // Function to update device uptime
-const updateUptime = functions.https.onRequest(async (req, res) => {
-  if (req.method !== 'POST') {
-    return res.status(405).send('Method Not Allowed');
-  }
+const updateUptime = functions
+  .runWith({ secrets: ['SECRET_API_KEY'] })
+  .https.onRequest(async (req, res) => {
+    if (req.method !== 'POST') {
+      return res.status(405).send('Method Not Allowed');
+    }
 
-  const { deviceID, type, power, alarm } = req.body;
+    const { api_key, deviceID, type, power, alarm } = req.body;
 
-  // Validate the request body
-  if (!deviceID || !type || typeof power !== 'boolean' || typeof alarm !== 'boolean') {
-    return res.status(400).send('Missing or incorrect required parameters');
-  }
+    // Validate API key
+    if (!api_key) {
+      return res.status(400).send('Missing api_key');
+    }
+
+    if (api_key !== process.env.SECRET_API_KEY) {
+      return res.status(401).send('Invalid API key');
+    }
+
+    // Validate the request body
+    if (!deviceID || !type || typeof power !== 'boolean' || typeof alarm !== 'boolean') {
+      return res.status(400).send('Missing or incorrect required parameters');
+    }
 
   const deviceRef = admin.database().ref(`/devices/${type}/${deviceID}`);
   const emailLogRef = admin.database().ref(`/emailLogs/${type}/${deviceID}`);
