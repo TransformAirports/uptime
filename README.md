@@ -114,12 +114,7 @@ The sensor enclosures are designed to protect hardware components from environme
 
 ## Software Information
 
-### Security and Reliability
-
-- All data transmissions use TLS and modern cloud‑application standards.  
-- While communication is secure, the telemetry itself is read‑only and effectively open‑data, enabling transparent monitoring without exposing sensitive information.
-
-### Dashboard Access
+XXX
 
 Airports can deploy the dashboard in two ways:
 
@@ -128,7 +123,7 @@ Airports can deploy the dashboard in two ways:
 
 ## API Information
 
-### API Access
+XXX
 
 Airports can access the API in two ways:
 
@@ -166,7 +161,13 @@ This project utilises several Software‑as‑a‑Service (SaaS) products to ens
 
 ## Compliance and Security
 
-XXXX
+#### Data Transmission
+
+All data transmissions use TLS and modern cloud‑application standards.  
+
+#### Data Integrity
+
+While communication is secure, the telemetry itself is read‑only and effectively open‑data, enabling monitoring without exposing sensitive information.
 
 #### Microcontroller Security: ESP32 Devices
 
@@ -229,13 +230,13 @@ xcode-select --install
 # 2. Install Homebrew (the one-liner everyone pastes from brew.sh)
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-# 3. Install Node.js (comes with npm)
+# 3. Install Node.js
 brew install node
 
 # 4. Install the Firebase CLI globally so you can init, deploy, etc.
 npm install -g firebase-tools
 
-# 5. Install the GitHub CLI (handy for cloning, PRs, auth)
+# 5. Install the GitHub CLI
 brew install gh
 
 # 6. Authenticate the GitHub CLI
@@ -245,13 +246,13 @@ gh auth login
 gh repo clone TransformAirports/uptime
 cd uptime
 
-# 8. Pull project dependencies — add Firebase Admin SDK if it’s not in package.json
-npm install           # installs everything listed in package.json
+# 8. Pull project dependencies
+npm install
 
 # 9. Authenticate into Firebase (once per machine)
 firebase login
 
-# 10. Create a brand-new project from the CLI
+# 10. Create a new Firebase project
 firebase projects:create uptime-monitoring --display-name "Uptime Monitoring"
 
 # 11. Tell the CLI which project this folder should point to
