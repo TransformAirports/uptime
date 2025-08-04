@@ -113,6 +113,7 @@ const loadDevices = () => {
           // Create a card for each device and display its status
           groupedDevices[type].forEach((device) => {
             const deviceID = device.deviceID;
+            const deviceName = device.device_name || deviceID;
             const isMonitored = device.monitored;
             const deviceStatus =
               isMonitored && device.power && !device.alarm
@@ -154,7 +155,7 @@ const loadDevices = () => {
             deviceDiv.innerHTML = `
               <div class="card mb-3 ${deviceStatus === 'online' ? 'border-success' : 'border-danger'}">
                 <div class="card-body">
-                  <h4 class="card-title">${deviceID}</h4>
+                  <h4 class="card-title">${deviceName}</h4>
                   <p class="card-text small text-muted">${
                     device.location || 'Location unknown'
                   }</p>
