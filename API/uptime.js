@@ -19,20 +19,28 @@ const EMAIL_INTERVAL_SECONDS = 21600;
  * @param {string} deviceID - The ID of the device that went offline.
  * @param {string} type - The type of device (Elevator, Escalator, Moving Walkway).
  * @param {number} timestamp - The timestamp when the device went offline.
+ * @param {string} apiKey - The API key identifying the Firestore collection containing recipient addresses.
  */
-async function sendOutageEmail(deviceID, type, timestamp) {
+async function sendOutageEmail(deviceID, type, timestamp, apiKey) {
   try {
-    // Retrieve the list of global alert email addresses
-    const emailSnapshot = await admin.database().ref(`/alertEmails`).once('value');
-    const emails = emailSnapshot.val();
+    // Retrieve the list of alert email addresses from Firestore
+    const emailsSnapshot = await admin.firestore().collection(apiKey).get();
 
-    if (!emails) {
+    if (emailsSnapshot.empty) {
       console.log('No alert emails configured.');
       return;
     }
 
     // Join the email addresses into a comma-separated string
-    const toEmails = Object.values(emails).join(', ');
+    const toEmails = emailsSnapshot.docs
+      .map((doc) => doc.data().address)
+      .filter(Boolean)
+      .join(', ');
+
+    if (!toEmails) {
+      console.log('No valid email addresses found.');
+      return;
+    }
 
     // Convert timestamp to New York/EST time
     const estTime = DateTime.fromSeconds(timestamp).setZone('America/New_York').toLocaleString(DateTime.DATETIME_FULL);
@@ -147,7 +155,7 @@ const uptime = functions
       // Only send an email if the last one was sent more than 6 hours ago
       if (!lastEmailTimestamp || (now - lastEmailTimestamp > EMAIL_INTERVAL_SECONDS)) {
         setTimeout(async () => {
-          await sendOutageEmail(deviceID, type, now);
+          await sendOutageEmail(deviceID, type, now, api_key);
           // Log the timestamp of the sent email
           await emailLogRef.set(now);
         }, 30000); // 30 seconds delay
