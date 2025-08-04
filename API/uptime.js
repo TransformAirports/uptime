@@ -5,11 +5,6 @@ const admin = require('firebase-admin');
 const postmark = require('postmark');
 const { DateTime } = require('luxon'); // Import Luxon for time zone management
 
-// Get Postmark API key from Firebase secret
-const postmarkApiKey = process.env.SECRET_POSTMARK_API;
-
-// Create a Postmark client instance
-const postmarkClient = new postmark.ServerClient(postmarkApiKey);
 
 // Define a 6-hour (21600 seconds) interval for email notifications
 const EMAIL_INTERVAL_SECONDS = 21600;
@@ -23,6 +18,16 @@ const EMAIL_INTERVAL_SECONDS = 21600;
  */
 async function sendOutageEmail(deviceID, type, timestamp, apiKey) {
   try {
+    // Retrieve Postmark API key from Firebase secret
+    const postmarkApiKey = process.env.SECRET_POSTMARK_API;
+    if (!postmarkApiKey) {
+      console.error('Postmark API key not configured.');
+      return;
+    }
+
+    // Create a Postmark client instance
+    const postmarkClient = new postmark.ServerClient(postmarkApiKey);
+
     // Retrieve the list of alert email addresses from Firestore
     const emailsSnapshot = await admin.firestore().collection(apiKey).get();
 
