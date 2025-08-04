@@ -40,6 +40,11 @@ function fonts() {
     .pipe(dest('dist'));
 }
 
+function firebaseConfig() {
+  return src('website/My_Firebase_Config.json')
+    .pipe(dest('dist'));
+}
+
 function serve() {
   browserSync.init({
     server: { baseDir: 'website' }
@@ -57,5 +62,5 @@ const build = series(clean, parallel(html, styles, scripts, images, fonts));
 
 exports.clean = clean;
 exports.build = build;
-exports.deploy = series(build, firebaseDeploy);
+exports.deploy = series(build, firebaseConfig, firebaseDeploy);
 exports.local = serve;
