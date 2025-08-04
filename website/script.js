@@ -144,7 +144,7 @@ const loadDevices = () => {
             deviceDiv.innerHTML = `
               <div class="device-card-inner border ${
                 deviceStatus === 'online' ? 'border-green-500' : 'border-red-500'
-              } rounded p-4 bg-white">
+              } p-4 bg-white">
                 <h4 class="text-lg font-bold">${deviceName}</h4>
                 ${locationHTML}
                 <p class="text-sm mt-2">
