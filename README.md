@@ -212,6 +212,32 @@ curl --location 'https://us-central1-uptime-eb91e.cloudfunctions.net/updateUptim
 - The API is designed to handle requests that update the status of devices deployed across MWAA facilities. It is critical that all parameters are provided accurately to ensure the proper monitoring and alerting of EEMWs.
 - The `power` and `alarm` parameters must be carefully monitored and updated to reflect the true status of the device, as they are essential for triggering notifications and logging uptime/downtime events.
 
+## CLI Commands
+
+**To run dashboard as a website:**
+
+```
+gulp local
+```
+
+**To deploy or update dashboard code to Firebase:**
+
+```
+gulp deploy
+```
+
+**To deploy or update API code to Firebase:**
+
+```
+firebase deploy --only functions
+```
+
+**To set or update your API Key:**
+
+```
+firebase functions:secrets:set SECRET_API_KEY
+```
+
 ## Contributing
 
 Contributions to this project are managed through GitHub. For significant changes, please submit an issue to discuss the proposal before making a pull request.
