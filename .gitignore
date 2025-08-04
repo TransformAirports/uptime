@@ -381,3 +381,4 @@ pyrightconfig.json
 # Custom additions
 .DS_Store
 .firebase
+.firebase/
