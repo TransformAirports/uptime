@@ -4,6 +4,23 @@ This repository contains the source code and documentation for the **_Uptime_ El
 
 ![V2 Sensor Image](https://github.com/AirportLabs/uptime/blob/main/photos/sensor_v2.png)
 
+## Table of Contents
+
+- [Repository Structure](#repository-structure)
+- [Features](#features)
+- [Concept](#concept)
+- [Technical Background](#technical-background)
+- [Hardware Information](#hardware-information)
+- [Software Information](#software-information)
+- [API Information](#api-information)
+- [Software-as-a-Service (SaaS) Services](#software-as-a-service-saas-services)
+- [Compliance and Security](#compliance-and-security)
+- [Technical Instructions](#technical-instructions)
+- [Setting up Local Software Environment](#setting-up-local-software-environment)
+- [Installing Hardware](#installing-hardware)
+- [Contributing](#contributing)
+- [License](#license)
+
 ## Repository Structure
 
 - **/API**: Contains the Firebase Functions code that handles API requests, processes sensor data, and sends email notifications via the Postmark App API.
@@ -206,18 +223,57 @@ curl --location 'https://us-central1-uptime-eb91e.cloudfunctions.net/uptime' --h
 ## Setting up Local Software Environment
 
 ```bash
-# Run dashboard locally
-gulp local
+# 1. Install Xcode Command-Line Tools
+xcode-select --install
 
-# Deploy or update dashboard code
-gulp deploy
+# 2. Install Homebrew (the one-liner everyone pastes from brew.sh)
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-# Deploy or update API code
-firebase deploy --only functions
+# 3. Install Node.js (comes with npm)
+brew install node
 
-# Set or update your API keys
+# 4. Install the Firebase CLI globally so you can init, deploy, etc.
+npm install -g firebase-tools
+
+# 5. Install the GitHub CLI (handy for cloning, PRs, auth)
+brew install gh
+
+# 6. Authenticate the GitHub CLI
+gh auth login
+
+# 7. Clone your repo
+gh repo clone TransformAirports/uptime
+cd uptime
+
+# 8. Pull project dependencies — add Firebase Admin SDK if it’s not in package.json
+npm install           # installs everything listed in package.json
+
+# 9. Authenticate into Firebase (once per machine)
+firebase login
+
+# 10. Create a brand-new project from the CLI
+firebase projects:create uptime-monitoring --display-name "Uptime Monitoring"
+
+# 11. Tell the CLI which project this folder should point to
+firebase use --add  # then pick uptime-monitoring
+
+# 12. Scaffold the code + config for all four Firebase products
+firebase init functions,database,firestore,hosting
+
+# 13. Install Cloud Functions dependencies
+cd functions && npm install && cd ..
+
+# 14. Add your custom Uptime API key
 firebase functions:secrets:set SECRET_API_KEY
-firebase functions:secrets:set SECRET_POSTMARK_API
+
+# 15. Add Postmark API key for managing email alerts
+firebase functions:secrets:set POSTMARK_KEY
+
+# 16. Deploy to Firebase (all targets in one go)
+firebase deploy --only "functions,database,firestore,hosting"
+
+# 17. Open the hosted dashboard in your browser
+firebase open hosting:site
 ```
 
 ## Installing Hardware
