@@ -12,11 +12,12 @@ const EMAIL_INTERVAL_SECONDS = 21600;
 /**
  * Sends an email notification using the Postmark Node.js SDK.
  * @param {string} deviceID - The ID of the device that went offline.
+ * @param {string} deviceName - The human-readable name of the device.
  * @param {string} type - The type of device (Elevator, Escalator, Moving Walkway).
  * @param {number} timestamp - The timestamp when the device went offline.
  * @param {string} apiKey - The API key identifying the Firestore collection containing recipient addresses.
  */
-async function sendOutageEmail(deviceID, type, timestamp, apiKey) {
+async function sendOutageEmail(deviceID, deviceName, type, timestamp, apiKey) {
   try {
     // Retrieve Postmark API key from Firebase secret
     const postmarkApiKey = process.env.SECRET_POSTMARK_API;
@@ -51,15 +52,24 @@ async function sendOutageEmail(deviceID, type, timestamp, apiKey) {
     const estTime = DateTime.fromSeconds(timestamp).setZone('America/New_York').toLocaleString(DateTime.DATETIME_FULL);
 
     // Prepare the subject and body of the email
-    const subject = `${type.charAt(0).toUpperCase() + type.slice(1)} Outage (${deviceID})`;
-    const body = `${deviceID} was reported as being offline on ${estTime}.`;
+    const typeMap = {
+      escalator: 'Escalator',
+      elevator: 'Elevator',
+      sidewalk: 'Moving Sidewalk'
+    };
+    const normalizedType = type.toLowerCase();
+    const deviceType = typeMap[normalizedType] || (type.charAt(0).toUpperCase() + type.slice(1));
+    const subject = `${deviceType} Outage (${deviceName})`;
+    const textBody = `${deviceName} (${deviceID}) was reported as being offline on ${estTime}.`;
+    const htmlBody = `<strong>${deviceName}</strong> (<strong>${deviceID}</strong>) was reported as being offline on <strong>${estTime}</strong>.`;
 
     // Send the email using Postmark SDK
     await postmarkClient.sendEmail({
       From: 'Uptime <uptime@transformairports.com>',
       To: toEmails,
       Subject: subject,
-      TextBody: body
+      TextBody: textBody,
+      HtmlBody: htmlBody
     });
 
     console.log('Outage email sent for device:', deviceID);
@@ -160,7 +170,7 @@ const uptime = functions
       // Only send an email if the last one was sent more than 6 hours ago
       if (!lastEmailTimestamp || (now - lastEmailTimestamp > EMAIL_INTERVAL_SECONDS)) {
         setTimeout(async () => {
-          await sendOutageEmail(deviceID, type, now, api_key);
+          await sendOutageEmail(deviceID, device_name, type, now, api_key);
           // Log the timestamp of the sent email
           await emailLogRef.set(now);
         }, 30000); // 30 seconds delay
