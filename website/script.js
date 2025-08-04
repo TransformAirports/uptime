@@ -141,16 +141,6 @@ const loadDevices = () => {
             if (isMonitored) {
               extraInfoHTML = `
                 <p class="card-text extra-info">
-                  <small class="text-muted">Hours Uptime this Month:</small> <span id="uptime-hours-${deviceID}">${
-                device.currentMonthUptime
-                  ? device.currentMonthUptime.uptimeHours
-                  : 'N/A'
-              }</span><br>
-                  <small class="text-muted">% Uptime this Month:</small> <span id="uptime-percentage-${deviceID}">${
-                device.currentMonthUptime
-                  ? device.currentMonthUptime.uptimePercentage
-                  : 'N/A'
-              }%</span><br>
                   <small class="text-muted" id="last-reading-${deviceID}">Last sensor reading: ${new Date(
                 lastStatusCheckTimestamp * 1000
               ).toLocaleString()}</small>
@@ -158,13 +148,16 @@ const loadDevices = () => {
               `;
             }
 
+            // Prepare location HTML only if a location is provided
+            const locationHTML = device.location
+              ? `<p class="card-text small text-muted">${device.location}</p>`
+              : '';
+
             deviceDiv.innerHTML = `
               <div class="card mb-3 ${deviceStatus === 'online' ? 'border-success' : 'border-danger'}">
                 <div class="card-body">
                   <h4 class="card-title">${deviceName}</h4>
-                  <p class="card-text small text-muted">${
-                    device.location || 'Location unknown'
-                  }</p>
+                  ${locationHTML}
                   <p class="card-text">
                     <strong>Power:</strong> <span class="power-indicator" style="color: ${
                       isMonitored ? getPowerColor(device.power) : 'grey'
