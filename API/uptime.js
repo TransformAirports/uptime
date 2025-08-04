@@ -1,4 +1,4 @@
-// updateUptime.js
+// uptime.js
 
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
@@ -56,7 +56,7 @@ async function sendOutageEmail(deviceID, type, timestamp) {
 }
 
 // Function to update device uptime
-const updateUptime = functions
+const uptime = functions
   .runWith({ secrets: ['SECRET_API_KEY'] })
   .https.onRequest(async (req, res) => {
     if (req.method !== 'POST') {
@@ -165,5 +165,5 @@ const updateUptime = functions
 
 // Export the functions
 module.exports = {
-  updateUptime
+  uptime
 };

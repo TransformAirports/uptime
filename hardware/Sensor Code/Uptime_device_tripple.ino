@@ -6,7 +6,7 @@ const char* ssid = "InnovationNet";
 const char* password = "Mwaa1987!";
 
 // API endpoint
-const char* apiURL = "https://us-central1-uptime-eb91e.cloudfunctions.net/updateUptime";
+const char* apiURL = "https://us-central1-uptime-eb91e.cloudfunctions.net/uptime";
 
 // API key for authentication
 const char* apiKey = "YOUR_API_KEY";

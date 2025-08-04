@@ -161,7 +161,7 @@ This project utilizes a variety of Software as a Service (SaaS) products to ensu
 
 ## API Endpoint
 
-**URL**: `https://us-central1-uptime-eb91e.cloudfunctions.net/updateUptime`
+**URL**: `https://us-central1-uptime-eb91e.cloudfunctions.net/uptime`
 
 **Method**: `POST`
 
@@ -187,15 +187,15 @@ All requests must include a valid `api_key` that matches the `SECRET_API_KEY` co
 Below is an example of how to send data to the API using `curl`:
 
 ```bash
-curl --location 'https://us-central1-uptime-eb91e.cloudfunctions.net/updateUptime' \
+curl --location 'https://us-central1-uptime-eb91e.cloudfunctions.net/uptime' \
 --header 'Content-Type: application/json' \
 --data '{
-  "api_key": "XXX",
-  "deviceID": "Escalator01",
-  "device_name": "East Wing Escalator 1",
-  "type": "escalator",
+  "api_key": "eb37772a-3532-4edc-a444-03610748f1ea",
+  "deviceID": "escalator-north-DCA",
+  "device_name": "North Escalator (DCA)",
+  "type": "escalators",
   "power": true,
-  "alarm": true
+  "alarm": false
 }'
 ```
 
