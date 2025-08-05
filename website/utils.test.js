@@ -1,7 +1,12 @@
 const test = require('node:test');
 const assert = require('node:assert');
 
-const { normalizeDeviceType, getPowerColor, getAlarmColor } = require('./utils.js');
+const {
+  normalizeDeviceType,
+  getPowerColor,
+  getAlarmColor,
+  countOnlineDevices,
+} = require('./utils.js');
 
 test('normalizeDeviceType removes trailing s from plural forms', () => {
   assert.strictEqual(normalizeDeviceType('escalators'), 'escalator');
@@ -22,4 +27,14 @@ test('getPowerColor returns green for true and red for false', () => {
 test('getAlarmColor returns red for true and green for false', () => {
   assert.strictEqual(getAlarmColor(true), 'red');
   assert.strictEqual(getAlarmColor(false), 'green');
+});
+
+test('countOnlineDevices counts devices with power true and alarm false', () => {
+  const devices = [
+    { power: true, alarm: false },
+    { power: false, alarm: false },
+    { power: true, alarm: true },
+    { power: true, alarm: false, monitored: false },
+  ];
+  assert.strictEqual(countOnlineDevices(devices), 2);
 });

@@ -99,10 +99,8 @@ const loadDevices = () => {
           section.classList.add('mb-8');
           section.setAttribute('data-type', type);
 
-          // Count online devices
-          const onlineCount = groupedDevices[type].filter(
-            (device) => device.monitored && device.power && !device.alarm
-          ).length;
+          // Count online devices. A device is online when it has power and no alarm.
+          const onlineCount = countOnlineDevices(groupedDevices[type]);
           const totalCount = groupedDevices[type].length;
 
           // Section header
