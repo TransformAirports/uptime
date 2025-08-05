@@ -15,6 +15,20 @@ function getAlarmColor(alarm) {
   return alarm ? 'red' : 'green';
 }
 
+// Count the number of devices that are online. A device is considered online
+// when `power` is true and `alarm` is false. The `monitored` flag is ignored;
+// devices without a `monitored` property should still be counted if their
+// power and alarm values indicate an online state.
+function countOnlineDevices(devices) {
+  if (!Array.isArray(devices)) return 0;
+  return devices.filter((device) => device && device.power && !device.alarm).length;
+}
+
 if (typeof module !== 'undefined') {
-  module.exports = { normalizeDeviceType, getPowerColor, getAlarmColor };
+  module.exports = {
+    normalizeDeviceType,
+    getPowerColor,
+    getAlarmColor,
+    countOnlineDevices,
+  };
 }
