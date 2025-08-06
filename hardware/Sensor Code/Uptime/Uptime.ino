@@ -74,7 +74,8 @@ const int alarmPin2 = 26;  // GPIO pin for alarm input of unit 2
 const int powerPin3 = 34;  // GPIO for the third unit power pin
 const int alarmPin3 = 35;  // GPIO for the third unit alarm pin
 
-// Current in-memory device states used to detect changes.
+// Logic state of input, Active High Or Active Low. Change this variable depending on if you are 
+// monitirng a nomrally closed or nomrally open realy contact on the EEMW device.
 bool powerState1 = LOW;
 bool alarmState1 = LOW;
 bool powerState2 = LOW;
